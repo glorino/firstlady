@@ -37,7 +37,9 @@ export default function StockMovementsPage() {
     try {
       const res = await fetch("/api/products");
       setProducts(await res.json());
-    } catch {}
+    } catch (error) {
+      console.error("Failed to fetch products");
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

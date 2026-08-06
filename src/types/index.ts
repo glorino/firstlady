@@ -1,6 +1,6 @@
-import { Role, PaymentMethod, OrderStatus, StockMovementType, ExpenseStatus } from "@/generated/prisma";
+import { Role, PaymentMethod, OrderStatus, StockMovementType } from "@/generated/prisma";
 
-export type { Role, PaymentMethod, OrderStatus, StockMovementType, ExpenseStatus };
+export type { Role, PaymentMethod, OrderStatus, StockMovementType };
 
 export interface AuthUser {
   id: string;
@@ -8,51 +8,6 @@ export interface AuthUser {
   email: string;
   role: Role;
   avatar?: string | null;
-}
-
-export interface DashboardStats {
-  totalSales: number;
-  totalRevenue: number;
-  totalExpenses: number;
-  profit: number;
-  totalProducts: number;
-  lowStockCount: number;
-  totalCustomers: number;
-  totalUsers: number;
-  recentSales: any[];
-  topProducts: any[];
-  salesByDay: any[];
-  salesByCategory: any[];
-  stockValue: number;
-}
-
-export interface ProfitLossReport {
-  period: string;
-  revenue: number;
-  cogs: number;
-  grossProfit: number;
-  expenses: number;
-  netProfit: number;
-  margin: number;
-}
-
-export interface SalesReport {
-  date: string;
-  count: number;
-  revenue: number;
-  profit: number;
-}
-
-export interface StockReport {
-  productId: string;
-  productName: string;
-  sku: string;
-  currentStock: number;
-  minStock: number;
-  costPrice: number;
-  value: number;
-  movementCount: number;
-  lastMovement: string;
 }
 
 export interface CartItem {
@@ -104,11 +59,3 @@ export const ROLE_PERMISSIONS: Record<Role, string[]> = {
     "customers:view",
   ],
 };
-
-export function hasPermission(role: Role, permission: string): boolean {
-  return ROLE_PERMISSIONS[role]?.includes(permission) ?? false;
-}
-
-export function hasAnyPermission(role: Role, permissions: string[]): boolean {
-  return permissions.some((p) => hasPermission(role, p));
-}

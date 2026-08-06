@@ -31,7 +31,7 @@ function exportCsv(sales: any[]) {
     s.status,
     formatDate(s.createdAt),
   ]);
-  const quote = (v: string) => '"' + v + '"';
+  const quote = (v: string) => '"' + v.replace(/"/g, '""') + '"';
   const csvLines = [headers.join(",")];
   for (const row of rows) {
     csvLines.push(row.map(quote).join(","));

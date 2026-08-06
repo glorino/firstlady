@@ -6,8 +6,8 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, ShoppingCart, Package, Users, Truck, BarChart3,
-  Settings, LogOut, TrendingUp, Wallet, ClipboardList, Tags,
-  UserCircle, Receipt, PieChart, ChevronDown, ChevronRight,
+  Settings, TrendingUp, ClipboardList, Tags,
+  UserCircle, Receipt, PieChart,
   Store, X, Menu, FileText
 } from "lucide-react";
 import { cn, getInitials } from "@/lib/utils";

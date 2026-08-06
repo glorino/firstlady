@@ -124,12 +124,15 @@ model Product {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  category      Category   @relation(fields: [categoryId], references: [id])
-  supplier      Supplier?  @relation(fields: [supplierId], references: [id])
+  category      Category   @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  supplier      Supplier?  @relation(fields: [supplierId], references: [id], onDelete: SetNull)
   saleItems     SaleItem[]
   stockMovements StockMovement[]
   purchaseOrderItems PurchaseOrderItem[]
 
+  @@index([categoryId])
+  @@index([isActive])
+  @@index([stockQuantity])
   @@map("products")
 }
 
@@ -152,11 +155,15 @@ model Sale {
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
-  customer        Customer?     @relation(fields: [customerId], references: [id])
-  user            User          @relation(fields: [userId], references: [id])
+  customer        Customer?     @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  user            User          @relation(fields: [userId], references: [id], onDelete: Restrict)
   items           SaleItem[]
   payments        Payment[]
 
+  @@index([createdAt])
+  @@index([customerId])
+  @@index([userId])
+  @@index([status])
   @@map("sales")
 }
 
@@ -170,8 +177,10 @@ model SaleItem {
   total     Decimal @db.Decimal(10, 2)
 
   sale      Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
-  product   Product @relation(fields: [productId], references: [id])
+  product   Product @relation(fields: [productId], references: [id], onDelete: Restrict)
 
+  @@index([saleId])
+  @@index([productId])
   @@map("sale_items")
 }
 
@@ -199,7 +208,7 @@ model PurchaseOrder {
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
 
-  supplier      Supplier            @relation(fields: [supplierId], references: [id])
+  supplier      Supplier            @relation(fields: [supplierId], references: [id], onDelete: Restrict)
   items         PurchaseOrderItem[]
 
   @@map("purchase_orders")
@@ -214,7 +223,7 @@ model PurchaseOrderItem {
   total           Decimal       @db.Decimal(10, 2)
 
   purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
-  product         Product       @relation(fields: [productId], references: [id])
+  product         Product       @relation(fields: [productId], references: [id], onDelete: Restrict)
 
   @@map("purchase_order_items")
 }
@@ -229,9 +238,11 @@ model StockMovement {
   notes       String?
   createdAt   DateTime          @default(now())
 
-  product     Product           @relation(fields: [productId], references: [id])
-  user        User              @relation(fields: [userId], references: [id])
+  product     Product           @relation(fields: [productId], references: [id], onDelete: Restrict)
+  user        User              @relation(fields: [userId], references: [id], onDelete: Restrict)
 
+  @@index([productId])
+  @@index([createdAt])
   @@map("stock_movements")
 }
 
@@ -248,8 +259,9 @@ model Expense {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
-  user        User          @relation(fields: [userId], references: [id])
+  user        User          @relation(fields: [userId], references: [id], onDelete: Restrict)
 
+  @@index([date])
   @@map("expenses")
 }
 
@@ -264,8 +276,10 @@ model AuditLog {
   ipAddress String?
   createdAt DateTime @default(now())
 
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
 
+  @@index([userId])
+  @@index([createdAt])
   @@map("audit_logs")
 }
 

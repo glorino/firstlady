@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search, ShoppingCart, Plus, Minus, Trash2, CreditCard, Banknote,
@@ -26,6 +26,13 @@ export default function POSPage() {
   const [amountPaid, setAmountPaid] = useState("");
   const [processing, setProcessing] = useState(false);
   const [success, setSuccess] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
 
   const [taxRate, setTaxRate] = useState(7.5);
 
@@ -129,7 +136,7 @@ export default function POSPage() {
 
       if (res.ok) {
         setSuccess(true);
-        setTimeout(() => {
+        timeoutRef.current = setTimeout(() => {
           setCart([]);
           setShowPayment(false);
           setSuccess(false);

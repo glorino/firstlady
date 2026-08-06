@@ -83,5 +83,5 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return session;
     },
   },
-  trustHost: true,
+  ...(process.env.VERCEL ? { trustHost: true } : {}),
 });

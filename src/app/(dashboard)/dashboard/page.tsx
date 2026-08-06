@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ShoppingCart, Package, DollarSign, TrendingUp, AlertTriangle,
-  ArrowUpRight, Search, Sparkles, Brain, Loader2
+  Search, Sparkles, Brain, Loader2
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,10 +20,6 @@ const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { st
 const cardItem = {
   hidden: { opacity: 0, y: 20, scale: 0.95 },
   show: { opacity: 1, y: 0, scale: 1, transition: { type: "spring" as const, damping: 20, stiffness: 200 } },
-};
-const fadeSlide = {
-  hidden: { opacity: 0, y: 12 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" as const } },
 };
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -56,7 +52,6 @@ export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any>(null);
-  const [searchQuery, setSearchQuery] = useState("");
   const [dateFilter, setDateFilter] = useState("all");
   const [salesSearch, setSalesSearch] = useState("");
   const [stockSearch, setStockSearch] = useState("");
@@ -158,21 +153,12 @@ export default function DashboardPage() {
         </div>
       </motion.div>
 
-      {/* Global Search & Filter Bar */}
+      {/* Filter Bar */}
       <motion.div variants={cardItem}>
         <Card>
           <CardContent className="p-4">
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search products, sales, customers..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium text-gray-500">Filter by period</p>
               <div className="flex gap-2">
                 {DATE_FILTERS.map((f) => (
                   <motion.button
@@ -471,7 +457,7 @@ export default function DashboardPage() {
                           {showFinancials && (
                             <p className="text-sm font-semibold text-gray-900">{formatCurrency(sale.amount)}</p>
                           )}
-                          <Badge variant={sale.status === "completed" ? "success" : "destructive"} className="mt-1">
+                          <Badge variant={sale.status === "COMPLETED" ? "success" : "destructive"} className="mt-1">
                             {sale.status}
                           </Badge>
                         </div>

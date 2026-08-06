@@ -42,30 +42,11 @@ export function generateInvoiceNumber(): string {
   return `${prefix}-${timestamp}-${random}`;
 }
 
-export function generateSKU(category: string, id: number): string {
-  const prefix = category.slice(0, 3).toUpperCase();
-  return `${prefix}-${id.toString().padStart(5, "0")}`;
-}
-
-export function calculateProfit(revenue: number, cogs: number, expenses: number): number {
-  return revenue - cogs - expenses;
-}
-
-export function calculateMargin(revenue: number, cost: number): number {
-  if (revenue === 0) return 0;
-  return ((revenue - cost) / revenue) * 100;
-}
-
 export function getGreeting(): string {
   const hour = new Date().getHours();
   if (hour < 12) return "Good morning";
   if (hour < 17) return "Good afternoon";
   return "Good evening";
-}
-
-export function truncate(str: string, length: number): string {
-  if (str.length <= length) return str;
-  return str.slice(0, length) + "...";
 }
 
 export function getInitials(name: string): string {
