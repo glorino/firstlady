@@ -28,7 +28,7 @@ export default function ExpensesPage() {
   useEffect(() => { fetchExpenses(); }, []);
 
   const fetchExpenses = async () => {
-    try { const res = await fetch("/api/expenses"); setExpenses(await res.json()); } finally { setLoading(false); }
+    try { const res = await fetch("/api/expenses?limit=200"); const json = await res.json(); setExpenses(json.data || json); } finally { setLoading(false); }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

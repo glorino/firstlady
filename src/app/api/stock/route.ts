@@ -1,17 +1,32 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { requireRole } from "@/lib/api-auth";
+import { parsePagination, paginatedResponse } from "@/lib/pagination";
 
-export async function GET() {
+export async function GET(req: Request) {
   const authResult = await requireRole("ADMIN", "WAREHOUSE", "ACCOUNTANT");
   if (authResult.error) return authResult.error;
 
   try {
-    const movements = await prisma.stockMovement.findMany({
-      include: { product: true, user: true },
-      orderBy: { createdAt: "desc" },
-    });
-    return NextResponse.json(movements);
+    const { searchParams } = new URL(req.url);
+    const { page, limit, skip } = parsePagination(searchParams);
+
+    const where: any = {};
+    if (searchParams.get("type")) where.type = searchParams.get("type");
+    if (searchParams.get("productId")) where.productId = searchParams.get("productId");
+
+    const [movements, total] = await Promise.all([
+      prisma.stockMovement.findMany({
+        where,
+        include: { product: true, user: true },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+      }),
+      prisma.stockMovement.count({ where }),
+    ]);
+
+    return NextResponse.json(paginatedResponse(movements, total, { page, limit, skip }));
   } catch (error) {
     return NextResponse.json({ error: "Failed to fetch stock movements" }, { status: 500 });
   }

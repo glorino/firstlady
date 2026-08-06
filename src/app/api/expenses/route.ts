@@ -1,17 +1,32 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { requireRole } from "@/lib/api-auth";
+import { parsePagination, paginatedResponse } from "@/lib/pagination";
 
-export async function GET() {
+export async function GET(req: Request) {
   const authResult = await requireRole("ADMIN", "ACCOUNTANT");
   if (authResult.error) return authResult.error;
 
   try {
-    const expenses = await prisma.expense.findMany({
-      include: { user: true },
-      orderBy: { date: "desc" },
-    });
-    return NextResponse.json(expenses);
+    const { searchParams } = new URL(req.url);
+    const { page, limit, skip } = parsePagination(searchParams);
+
+    const where: any = {};
+    if (searchParams.get("category")) where.category = searchParams.get("category");
+    if (searchParams.get("status")) where.status = searchParams.get("status");
+
+    const [expenses, total] = await Promise.all([
+      prisma.expense.findMany({
+        where,
+        include: { user: true },
+        orderBy: { date: "desc" },
+        skip,
+        take: limit,
+      }),
+      prisma.expense.count({ where }),
+    ]);
+
+    return NextResponse.json(paginatedResponse(expenses, total, { page, limit, skip }));
   } catch (error) {
     return NextResponse.json({ error: "Failed to fetch expenses" }, { status: 500 });
   }

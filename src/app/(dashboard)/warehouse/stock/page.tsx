@@ -28,15 +28,17 @@ export default function StockMovementsPage() {
 
   const fetchMovements = async () => {
     try {
-      const res = await fetch("/api/stock");
-      setMovements(await res.json());
+      const res = await fetch("/api/stock?limit=200");
+      const json = await res.json();
+      setMovements(json.data || json);
     } finally { setLoading(false); }
   };
 
   const fetchProducts = async () => {
     try {
-      const res = await fetch("/api/products");
-      setProducts(await res.json());
+      const res = await fetch("/api/products?limit=200");
+      const json = await res.json();
+      setProducts(json.data || json);
     } catch (error) {
       console.error("Failed to fetch products");
     }

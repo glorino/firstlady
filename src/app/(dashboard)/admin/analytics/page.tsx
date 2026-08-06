@@ -18,10 +18,13 @@ export default function AnalyticsPage() {
 
   useEffect(() => {
     Promise.all([
-      fetch("/api/sales").then((r) => r.json()),
-      fetch("/api/products").then((r) => r.json()),
-      fetch("/api/customers").then((r) => r.json()),
-    ]).then(([sales, products, customers]) => {
+      fetch("/api/sales?limit=200").then((r) => r.json()),
+      fetch("/api/products?limit=200").then((r) => r.json()),
+      fetch("/api/customers?limit=200").then((r) => r.json()),
+    ]).then(([salesRes, productsRes, customersRes]) => {
+      const sales = salesRes.data || salesRes;
+      const products = productsRes.data || productsRes;
+      const customers = customersRes.data || customersRes;
       const COMPLETED_SALES = sales.filter((s: any) => s.status === "COMPLETED" || s.status === "PENDING");
 
       // Top products

@@ -113,9 +113,9 @@ export default function SalesHistoryPage() {
 
   const fetchSales = async () => {
     try {
-      const res = await fetch("/api/sales");
-      const data = await res.json();
-      setSales(data);
+      const res = await fetch("/api/sales?limit=200");
+      const json = await res.json();
+      setSales(json.data || json);
     } catch (error) {
       console.error("Failed to fetch sales");
     } finally {

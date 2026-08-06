@@ -1,14 +1,22 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { requireAuth, requireRole } from "@/lib/api-auth";
+import { parsePagination, paginatedResponse } from "@/lib/pagination";
 
-export async function GET() {
+export async function GET(req: Request) {
   const authResult = await requireAuth();
   if (authResult.error) return authResult.error;
 
   try {
-    const suppliers = await prisma.supplier.findMany({ orderBy: { createdAt: "desc" } });
-    return NextResponse.json(suppliers);
+    const { searchParams } = new URL(req.url);
+    const { page, limit, skip } = parsePagination(searchParams);
+
+    const [suppliers, total] = await Promise.all([
+      prisma.supplier.findMany({ orderBy: { createdAt: "desc" }, skip, take: limit }),
+      prisma.supplier.count(),
+    ]);
+
+    return NextResponse.json(paginatedResponse(suppliers, total, { page, limit, skip }));
   } catch (error) {
     return NextResponse.json({ error: "Failed to fetch suppliers" }, { status: 500 });
   }

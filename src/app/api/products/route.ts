@@ -1,17 +1,32 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { requireAuth, requireRole } from "@/lib/api-auth";
+import { parsePagination, paginatedResponse } from "@/lib/pagination";
 
-export async function GET() {
+export async function GET(req: Request) {
   const authResult = await requireAuth();
   if (authResult.error) return authResult.error;
 
   try {
-    const products = await prisma.product.findMany({
-      include: { category: true, supplier: true },
-      orderBy: { createdAt: "desc" },
-    });
-    return NextResponse.json(products);
+    const { searchParams } = new URL(req.url);
+    const { page, limit, skip } = parsePagination(searchParams);
+
+    const where: any = {};
+    if (searchParams.get("categoryId")) where.categoryId = searchParams.get("categoryId");
+    if (searchParams.get("isActive") !== null) where.isActive = searchParams.get("isActive") === "true";
+
+    const [products, total] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        include: { category: true, supplier: true },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+      }),
+      prisma.product.count({ where }),
+    ]);
+
+    return NextResponse.json(paginatedResponse(products, total, { page, limit, skip }));
   } catch (error) {
     return NextResponse.json({ error: "Failed to fetch products" }, { status: 500 });
   }

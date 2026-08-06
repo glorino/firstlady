@@ -46,6 +46,7 @@ const ROLE_NAV: Record<Role, NavGroup[]> = {
       title: "Operations",
       items: [
         { label: "Products", href: "/warehouse/products", icon: Package },
+        { label: "Purchase Orders", href: "/warehouse/purchase-orders", icon: ClipboardList },
         { label: "Sales History", href: "/sales/history", icon: ClipboardList },
         { label: "Expenses", href: "/accountant/expenses", icon: Receipt },
       ],
@@ -82,6 +83,7 @@ const ROLE_NAV: Record<Role, NavGroup[]> = {
       title: "Supply Chain",
       items: [
         { label: "Suppliers", href: "/warehouse/suppliers", icon: Truck },
+        { label: "Purchase Orders", href: "/warehouse/purchase-orders", icon: ClipboardList },
       ],
     },
   ],

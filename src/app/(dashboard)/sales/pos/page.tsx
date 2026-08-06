@@ -38,19 +38,19 @@ export default function POSPage() {
 
   useEffect(() => {
     Promise.all([
-      fetch("/api/products").then((r) => r.json()),
+      fetch("/api/products?limit=200").then((r) => r.json()),
       fetch("/api/settings").then((r) => r.json()),
     ]).then(([products, settings]) => {
-      setProducts(products);
+      setProducts(products.data || products);
       if (settings.taxRate) setTaxRate(Number(settings.taxRate));
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
   const fetchProducts = async () => {
     try {
-      const res = await fetch("/api/products");
-      const data = await res.json();
-      setProducts(data);
+      const res = await fetch("/api/products?limit=200");
+      const json = await res.json();
+      setProducts(json.data || json);
     } catch (error) {
       console.error("Failed to fetch products");
     }

@@ -25,7 +25,7 @@ export default function SuppliersPage() {
   useEffect(() => { fetchSuppliers(); }, []);
 
   const fetchSuppliers = async () => {
-    try { const res = await fetch("/api/suppliers"); setSuppliers(await res.json()); } finally { setLoading(false); }
+    try { const res = await fetch("/api/suppliers?limit=200"); const json = await res.json(); setSuppliers(json.data || json); } finally { setLoading(false); }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

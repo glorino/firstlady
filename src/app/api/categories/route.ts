@@ -1,14 +1,22 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { requireAuth, requireRole } from "@/lib/api-auth";
+import { parsePagination, paginatedResponse } from "@/lib/pagination";
 
-export async function GET() {
+export async function GET(req: Request) {
   const authResult = await requireAuth();
   if (authResult.error) return authResult.error;
 
   try {
-    const categories = await prisma.category.findMany({ orderBy: { name: "asc" } });
-    return NextResponse.json(categories);
+    const { searchParams } = new URL(req.url);
+    const { page, limit, skip } = parsePagination(searchParams);
+
+    const [categories, total] = await Promise.all([
+      prisma.category.findMany({ orderBy: { name: "asc" }, skip, take: limit }),
+      prisma.category.count(),
+    ]);
+
+    return NextResponse.json(paginatedResponse(categories, total, { page, limit, skip }));
   } catch (error) {
     return NextResponse.json({ error: "Failed to fetch categories" }, { status: 500 });
   }

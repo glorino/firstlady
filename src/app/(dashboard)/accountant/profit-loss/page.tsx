@@ -24,9 +24,11 @@ export default function ProfitLossPage() {
 
   useEffect(() => {
     Promise.all([
-      fetch("/api/sales").then((r) => r.json()),
-      fetch("/api/expenses").then((r) => r.json()),
-    ]).then(([sales, expenses]) => {
+      fetch("/api/sales?limit=200").then((r) => r.json()),
+      fetch("/api/expenses?limit=200").then((r) => r.json()),
+    ]).then(([salesRes, expensesRes]) => {
+      const sales = salesRes.data || salesRes;
+      const expenses = expensesRes.data || expensesRes;
       const COMPLETED_SALES = sales.filter((s: any) => s.status === "COMPLETED" || s.status === "PENDING");
       const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
       const monthlyMap: Record<string, { revenue: number; cogs: number; expenses: number; profit: number }> = {};

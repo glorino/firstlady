@@ -69,9 +69,9 @@ export default function ProductsPage() {
 
   const fetchProducts = async () => {
     try {
-      const res = await fetch("/api/products");
-      const data = await res.json();
-      setProducts(data);
+      const res = await fetch("/api/products?limit=200");
+      const json = await res.json();
+      setProducts(json.data || json);
     } catch (error) {
       console.error("Failed to fetch products");
     } finally {
@@ -81,9 +81,9 @@ export default function ProductsPage() {
 
   const fetchCategories = async () => {
     try {
-      const res = await fetch("/api/categories");
-      const data = await res.json();
-      setCategories(data);
+      const res = await fetch("/api/categories?limit=200");
+      const json = await res.json();
+      setCategories(json.data || json);
     } catch (error) {
       console.error("Failed to fetch categories");
     }

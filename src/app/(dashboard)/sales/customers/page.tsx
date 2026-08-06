@@ -27,8 +27,9 @@ export default function CustomersPage() {
 
   const fetchCustomers = async () => {
     try {
-      const res = await fetch("/api/customers");
-      setCustomers(await res.json());
+      const res = await fetch("/api/customers?limit=200");
+      const json = await res.json();
+      setCustomers(json.data || json);
     } finally { setLoading(false); }
   };
 

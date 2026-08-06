@@ -66,8 +66,9 @@ const REPORTS: ReportDef[] = [
     icon: BarChart3,
     colorClass: "blue",
     fetcher: async (period) => {
-      const res = await fetch("/api/sales");
-      const sales = await res.json();
+      const res = await fetch("/api/sales?limit=200");
+      const json = await res.json();
+      const sales = json.data || json;
       const filtered = filterByDate(sales, "createdAt", period);
       return {
         columns: ["Invoice", "Customer", "Items", "Amount", "Payment", "Status", "Date"],
@@ -90,8 +91,9 @@ const REPORTS: ReportDef[] = [
     icon: PieChart,
     colorClass: "emerald",
     fetcher: async () => {
-      const res = await fetch("/api/products");
-      const products = await res.json();
+      const res = await fetch("/api/products?limit=200");
+      const json = await res.json();
+      const products = json.data || json;
       return {
         columns: ["Product", "SKU", "Stock", "Min Level", "Price", "Total Value", "Status"],
         data: products.map((p: any) => [
@@ -114,11 +116,13 @@ const REPORTS: ReportDef[] = [
     colorClass: "purple",
     fetcher: async (period) => {
       const [salesRes, expensesRes] = await Promise.all([
-        fetch("/api/sales"),
-        fetch("/api/expenses"),
+        fetch("/api/sales?limit=200"),
+        fetch("/api/expenses?limit=200"),
       ]);
-      const sales = await salesRes.json();
-      const expenses = await expensesRes.json();
+      const salesJson = await salesRes.json();
+      const expensesJson = await expensesRes.json();
+      const sales = salesJson.data || salesJson;
+      const expenses = expensesJson.data || expensesJson;
       const filteredSales = filterByDate(sales, "createdAt", period);
       const filteredExpenses = filterByDate(expenses, "date", period);
 
@@ -157,8 +161,9 @@ const REPORTS: ReportDef[] = [
     icon: FileText,
     colorClass: "amber",
     fetcher: async () => {
-      const res = await fetch("/api/customers");
-      const customers = await res.json();
+      const res = await fetch("/api/customers?limit=200");
+      const json = await res.json();
+      const customers = json.data || json;
       return {
         columns: ["Customer", "Phone", "Email", "Total Orders", "Outstanding", "Status"],
         data: customers.map((c: any) => [
@@ -179,8 +184,9 @@ const REPORTS: ReportDef[] = [
     icon: FileText,
     colorClass: "red",
     fetcher: async (period) => {
-      const res = await fetch("/api/expenses");
-      const expenses = await res.json();
+      const res = await fetch("/api/expenses?limit=200");
+      const json = await res.json();
+      const expenses = json.data || json;
       const filtered = filterByDate(expenses, "date", period);
       return {
         columns: ["Category", "Amount", "Date", "Description"],
@@ -200,8 +206,9 @@ const REPORTS: ReportDef[] = [
     icon: FileText,
     colorClass: "indigo",
     fetcher: async (period) => {
-      const res = await fetch("/api/stock");
-      const movements = await res.json();
+      const res = await fetch("/api/stock?limit=200");
+      const json = await res.json();
+      const movements = json.data || json;
       const filtered = filterByDate(movements, "createdAt", period);
       return {
         columns: ["Date", "Product", "Type", "Quantity", "Reference", "Notes"],
