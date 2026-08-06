@@ -26,9 +26,11 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Check for session cookie for page routes
+  // Check for session cookie for page routes (Auth.js v5 uses "authjs" prefix)
   const sessionCookie = request.cookies.get("next-auth.session-token") ||
-    request.cookies.get("__Secure-next-auth.session-token");
+    request.cookies.get("__Secure-next-auth.session-token") ||
+    request.cookies.get("authjs.session-token") ||
+    request.cookies.get("__Secure-authjs.session-token");
 
   if (!sessionCookie) {
     return NextResponse.redirect(new URL("/login", request.url));

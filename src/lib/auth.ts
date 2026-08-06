@@ -12,21 +12,35 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
+        if (!credentials?.email || !credentials?.password) {
+          console.error("[AUTH] Missing credentials");
+          return null;
+        }
 
         try {
           const user = await prisma.user.findUnique({
             where: { email: credentials.email as string },
           });
 
-          if (!user || !user.isActive) return null;
+          if (!user) {
+            console.error("[AUTH] User not found:", credentials.email);
+            return null;
+          }
+
+          if (!user.isActive) {
+            console.error("[AUTH] User inactive:", credentials.email);
+            return null;
+          }
 
           const isValid = await bcrypt.compare(
             credentials.password as string,
             user.password
           );
 
-          if (!isValid) return null;
+          if (!isValid) {
+            console.error("[AUTH] Invalid password for:", credentials.email);
+            return null;
+          }
 
           await prisma.user.update({
             where: { id: user.id },
@@ -41,7 +55,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             avatar: user.avatar,
           };
         } catch (error) {
-          console.error("Auth error:", error);
+          console.error("[AUTH] Auth error:", error);
           return null;
         }
       },

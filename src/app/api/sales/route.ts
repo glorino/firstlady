@@ -1,11 +1,19 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { generateInvoiceNumber } from "@/lib/utils";
+import { requireAuth } from "@/lib/api-auth";
 
 export async function GET() {
+  const authResult = await requireAuth();
+  if (authResult.error) return authResult.error;
+
   try {
     const sales = await prisma.sale.findMany({
-      include: { customer: true, user: true, items: { include: { product: true } } },
+      include: {
+        customer: true,
+        user: true,
+        items: { include: { product: true } },
+        payments: true,
+      },
       orderBy: { createdAt: "desc" },
     });
     return NextResponse.json(sales);
@@ -15,66 +23,111 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  const authResult = await requireAuth();
+  if (authResult.error) return authResult.error;
+
   try {
     const body = await req.json();
     const { items, paymentMethod, amountPaid, taxRate, customerId } = body;
 
-    const subtotal = items.reduce((sum: number, item: any) => sum + item.unitPrice * item.quantity, 0);
-    const taxAmount = subtotal * (taxRate / 100);
+    if (!items?.length || !paymentMethod || !amountPaid) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    const validMethods = ["CASH", "CARD", "TRANSFER", "MOBILE"];
+    if (!validMethods.includes(paymentMethod)) {
+      return NextResponse.json({ error: "Invalid payment method" }, { status: 400 });
+    }
+
+    const rate = Number(taxRate) || 0;
+    if (rate < 0 || rate > 100) {
+      return NextResponse.json({ error: "Invalid tax rate" }, { status: 400 });
+    }
+
+    const subtotal = items.reduce(
+      (sum: number, item: any) => sum + Number(item.unitPrice) * item.quantity,
+      0
+    );
+    const taxAmount = subtotal * (rate / 100);
     const totalAmount = subtotal + taxAmount;
-
-    // Get authenticated user - fallback to first admin/sales user
-    let userId = body.userId;
-    if (!userId) {
-      const user = await prisma.user.findFirst({ where: { role: "SALES" } });
-      userId = user?.id;
+    const paid = Number(amountPaid);
+    if (paid < totalAmount) {
+      return NextResponse.json({ error: "Insufficient payment" }, { status: 400 });
     }
 
-    const sale = await prisma.sale.create({
-      data: {
-        invoiceNumber: generateInvoiceNumber(),
-        userId,
-        customerId: customerId || null,
-        subtotal,
-        taxRate,
-        taxAmount,
-        totalAmount,
-        paymentMethod,
-        amountPaid,
-        changeGiven: Math.max(0, amountPaid - totalAmount),
-        status: "COMPLETED",
-        items: {
-          create: items.map((item: any) => ({
-            productId: item.productId,
-            quantity: item.quantity,
-            unitPrice: item.unitPrice,
-            costPrice: item.costPrice,
-            total: item.unitPrice * item.quantity,
-          })),
-        },
-      },
-      include: { items: true },
-    });
+    const userId = authResult.user.id;
 
-    // Update stock quantities
+    // Validate stock availability
     for (const item of items) {
-      await prisma.product.update({
-        where: { id: item.productId },
-        data: { stockQuantity: { decrement: item.quantity } },
+      const product = await prisma.product.findUnique({ where: { id: item.productId } });
+      if (!product) {
+        return NextResponse.json({ error: `Product not found: ${item.productId}` }, { status: 400 });
+      }
+      if (product.stockQuantity < item.quantity) {
+        return NextResponse.json({ error: `Insufficient stock for ${product.name}` }, { status: 400 });
+      }
+    }
+
+    // Create sale with items and payment in transaction
+    const sale = await prisma.$transaction(async (tx) => {
+      const newSale = await tx.sale.create({
+        data: {
+          invoiceNumber: `INV-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
+          userId,
+          customerId: customerId || null,
+          subtotal,
+          taxRate: rate,
+          taxAmount,
+          totalAmount,
+          paymentMethod,
+          amountPaid: paid,
+          changeGiven: Math.max(0, paid - totalAmount),
+          status: "COMPLETED",
+          items: {
+            create: items.map((item: any) => ({
+              productId: item.productId,
+              quantity: item.quantity,
+              unitPrice: Number(item.unitPrice),
+              costPrice: Number(item.costPrice),
+              total: Number(item.unitPrice) * item.quantity,
+            })),
+          },
+          payments: {
+            create: {
+              amount: paid,
+              method: paymentMethod,
+              reference: `PAY-${Date.now().toString(36).toUpperCase()}`,
+            },
+          },
+        },
+        include: { items: true },
       });
 
-      // Create stock movement
-      await prisma.stockMovement.create({
-        data: {
-          productId: item.productId,
-          userId,
-          type: "SALE",
-          quantity: item.quantity,
-          reference: sale.invoiceNumber,
-          notes: `Sale: ${sale.invoiceNumber}`,
-        },
-      });
-    }
+      // Update stock atomically
+      for (const item of items) {
+        const product = await tx.product.findUnique({ where: { id: item.productId } });
+        const newStock = product!.stockQuantity - item.quantity;
+        if (newStock < 0) throw new Error("Stock cannot go below zero");
+
+        await tx.product.update({
+          where: { id: item.productId },
+          data: { stockQuantity: newStock },
+        });
+
+        await tx.stockMovement.create({
+          data: {
+            productId: item.productId,
+            userId,
+            type: "SALE",
+            quantity: item.quantity,
+            reference: newSale.invoiceNumber,
+            notes: `Sale: ${newSale.invoiceNumber}`,
+          },
+        });
+      }
+
+      return newSale;
+    });
 
     return NextResponse.json(sale, { status: 201 });
   } catch (error) {

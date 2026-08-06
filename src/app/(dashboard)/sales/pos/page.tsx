@@ -14,7 +14,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatCurrency, cn, generateInvoiceNumber } from "@/lib/utils";
 import { CartItem, PaymentMethod } from "@/types";
-import { motion as m } from "framer-motion";
 
 export default function POSPage() {
   const [products, setProducts] = useState<any[]>([]);

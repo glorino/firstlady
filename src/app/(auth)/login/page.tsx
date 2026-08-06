@@ -1,12 +1,53 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import { Mail, Lock, Eye, EyeOff, Store, Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Mail, Lock, Eye, EyeOff, Store, Loader2, Shield, Zap, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+
+const rollingTexts = [
+  { line1: "Manage your business", line2: "with confidence." },
+  { line1: "Track inventory in", line2: "real-time." },
+  { line1: "Make smarter decisions", line2: "with AI insights." },
+  { line1: "Boost your sales", line2: "performance." },
+  { line1: "Simplify operations", line2: "every day." },
+  { line1: "Grow your business", line2: "effortlessly." },
+];
+
+function RollingText() {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIndex((prev) => (prev + 1) % rollingTexts.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const current = rollingTexts[index];
+
+  return (
+    <div className="h-[140px] xl:h-[160px] overflow-hidden relative">
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={index}
+          initial={{ y: 40, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: -40, opacity: 0 }}
+          transition={{ duration: 0.5, ease: "easeInOut" }}
+          className="text-4xl xl:text-5xl font-bold text-white leading-tight"
+        >
+          <span>{current.line1}</span>
+          <br />
+          <span className="text-blue-200">{current.line2}</span>
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  );
+}
 
 export default function LoginPage() {
   const router = useRouter();
@@ -41,90 +82,144 @@ export default function LoginPage() {
     }
   };
 
+  const demoAccounts = [
+    { role: "Admin", email: "admin@firstlady.com", color: "from-blue-500 to-indigo-500" },
+    { role: "Sales", email: "sales@firstlady.com", color: "from-emerald-500 to-teal-500" },
+    { role: "Warehouse", email: "warehouse@firstlady.com", color: "from-amber-500 to-orange-500" },
+    { role: "Accountant", email: "accountant@firstlady.com", color: "from-purple-500 to-pink-500" },
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4">
-      {/* Background decoration */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-indigo-400/20 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-indigo-400/20 to-purple-400/20 rounded-full blur-3xl" />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50 flex">
+      {/* Left Panel — Branding */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700">
+        <div className="absolute inset-0">
+          <div className="absolute top-20 left-20 w-72 h-72 bg-white/5 rounded-full blur-3xl" />
+          <div className="absolute bottom-20 right-20 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
+        </div>
+        <div className="relative z-10 flex flex-col justify-center px-12 xl:px-16">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7 }}
+          >
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-12 h-12 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center border border-white/20">
+                <Store className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-white">FirstLady</h1>
+                <p className="text-xs text-blue-100">POS & Stock Management</p>
+              </div>
+            </div>
+
+            <RollingText />
+
+            <p className="text-blue-100/80 text-lg mb-10 max-w-md leading-relaxed">
+              Real-time inventory tracking, smart sales analytics, and AI-powered insights — all in one platform built for growing businesses.
+            </p>
+
+            <div className="space-y-4">
+              {[
+                { icon: Shield, text: "Role-based access control" },
+                { icon: Zap, text: "Real-time stock monitoring" },
+                { icon: BarChart3, text: "AI-powered business insights" },
+              ].map((feature, i) => (
+                <motion.div
+                  key={feature.text}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.4 + i * 0.15 }}
+                  className="flex items-center gap-3"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+                    <feature.icon className="w-4 h-4 text-white" />
+                  </div>
+                  <span className="text-sm text-blue-50 font-medium">{feature.text}</span>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="relative w-full max-w-md"
-      >
-        {/* Logo */}
+      {/* Right Panel — Login Form */}
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-10">
         <motion.div
-          initial={{ scale: 0.8 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.2, type: "spring" }}
-          className="text-center mb-8"
-        >
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-xl shadow-blue-500/25 mb-4">
-            <Store className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900">FirstLady</h1>
-          <p className="text-gray-500 mt-1">POS & Stock Management</p>
-        </motion.div>
-
-        {/* Login Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl shadow-gray-200/50 border border-gray-100 p-8"
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-md"
         >
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">Welcome back</h2>
-            <p className="text-sm text-gray-500 mt-1">Sign in to your account</p>
+          {/* Mobile Logo */}
+          <div className="lg:hidden text-center mb-8">
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-xl shadow-blue-500/25 mb-3">
+              <Store className="w-7 h-7 text-white" />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900">FirstLady</h1>
+            <p className="text-gray-500 text-sm mt-0.5">POS & Stock Management</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-900">Welcome back</h2>
+            <p className="text-sm text-gray-500 mt-1">Sign in to your account to continue</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="p-3 rounded-xl bg-red-50 border border-red-100 text-sm text-red-600"
+                className="flex items-center gap-2 p-3.5 rounded-xl bg-red-50 border border-red-100 text-sm text-red-600"
               >
+                <div className="w-5 h-5 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                  <span className="text-xs font-bold">!</span>
+                </div>
                 {error}
               </motion.div>
             )}
 
-            <Input
-              label="Email"
-              type="email"
-              placeholder="admin@firstlady.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              icon={<Mail className="w-4 h-4" />}
-              required
-            />
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-gray-700">Email address</label>
+              <div className="relative">
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-gray-400"
+                  required
+                />
+              </div>
+            </div>
 
-            <div className="relative">
-              <Input
-                label="Password"
-                type={showPassword ? "text" : "password"}
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                icon={<Lock className="w-4 h-4" />}
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-9 text-gray-400 hover:text-gray-600"
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-gray-700">Password</label>
+              <div className="relative">
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full pl-10 pr-12 py-3 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-gray-400"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
 
             <Button
               type="submit"
-              className="w-full"
-              size="lg"
+              className="w-full h-12 rounded-xl text-sm font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/25 transition-all"
               disabled={loading}
             >
               {loading ? (
@@ -135,18 +230,33 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <div className="mt-6 p-4 rounded-xl bg-gray-50 border border-gray-100">
-            <p className="text-xs font-medium text-gray-500 mb-2">Demo Accounts:</p>
-            <div className="space-y-1 text-xs text-gray-600">
-              <p><span className="font-medium">Admin:</span> admin@firstlady.com</p>
-              <p><span className="font-medium">Sales:</span> sales@firstlady.com</p>
-              <p><span className="font-medium">Warehouse:</span> warehouse@firstlady.com</p>
-              <p><span className="font-medium">Accountant:</span> accountant@firstlady.com</p>
-              <p className="text-gray-400 mt-1">Password: password123</p>
+          {/* Demo Accounts */}
+          <div className="mt-8 p-5 rounded-2xl bg-gray-50/80 border border-gray-100">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Quick Access — Demo Accounts</p>
+            <div className="grid grid-cols-2 gap-2">
+              {demoAccounts.map((acc) => (
+                <button
+                  key={acc.email}
+                  onClick={() => {
+                    setEmail(acc.email);
+                    setPassword("password123");
+                  }}
+                  className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white border border-gray-100 hover:border-gray-200 hover:shadow-sm transition-all text-left group"
+                >
+                  <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${acc.color} flex items-center justify-center flex-shrink-0`}>
+                    <span className="text-[10px] font-bold text-white">{acc.role[0]}</span>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">{acc.role}</p>
+                    <p className="text-[10px] text-gray-400 truncate">{acc.email}</p>
+                  </div>
+                </button>
+              ))}
             </div>
+            <p className="text-[10px] text-gray-400 mt-3 text-center">Password for all: <span className="font-medium text-gray-500">password123</span></p>
           </div>
         </motion.div>
-      </motion.div>
+      </div>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Settings, Store, Bell, Shield, Save, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -12,31 +12,74 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } };
 const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
 
+const DEFAULTS = {
+  storeName: "FirstLady Store",
+  storeAddress: "123 Business Street, Lagos",
+  storePhone: "+234 801 234 5678",
+  storeEmail: "info@firstlady.com",
+  taxRate: "7.5",
+  currency: "NGN",
+  lowStockThreshold: "10",
+};
+
 export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
-  const [settings, setSettings] = useState({
-    storeName: "FirstLady Store",
-    storeAddress: "123 Business Street, Lagos",
-    storePhone: "+234 801 234 5678",
-    storeEmail: "info@firstlady.com",
-    taxRate: "7.5",
-    currency: "NGN",
-    lowStockThreshold: "10",
-  });
+  const [loading, setLoading] = useState(true);
+  const [saved, setSaved] = useState(false);
+  const [settings, setSettings] = useState(DEFAULTS);
+
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data && !data.error) {
+          setSettings((prev) => ({ ...prev, ...data }));
+        }
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
 
   const handleSave = async () => {
     setSaving(true);
-    await new Promise(r => setTimeout(r, 1000));
-    setSaving(false);
+    setSaved(false);
+    try {
+      await fetch("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(settings),
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (error) {
+      console.error("Failed to save settings");
+    } finally {
+      setSaving(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
 
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
       <motion.div variants={item} className="flex items-center justify-between">
-        <div><h1 className="text-2xl font-bold text-gray-900">Settings</h1><p className="text-gray-500 mt-1">Configure your POS system</p></div>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+          <p className="text-gray-500 mt-1">Configure your POS system</p>
+        </div>
         <Button onClick={handleSave} disabled={saving}>
-          {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-          Save Changes
+          {saving ? (
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+          ) : (
+            <Save className="w-4 h-4 mr-2" />
+          )}
+          {saved ? "Saved!" : "Save Changes"}
         </Button>
       </motion.div>
 
@@ -50,7 +93,10 @@ export default function SettingsPage() {
 
           <TabsContent value="store">
             <Card>
-              <CardHeader><CardTitle>Store Information</CardTitle><CardDescription>Update your store details</CardDescription></CardHeader>
+              <CardHeader>
+                <CardTitle>Store Information</CardTitle>
+                <CardDescription>Update your store details</CardDescription>
+              </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Input label="Store Name" value={settings.storeName} onChange={(e) => setSettings({ ...settings, storeName: e.target.value })} />
@@ -66,7 +112,10 @@ export default function SettingsPage() {
 
           <TabsContent value="notifications">
             <Card>
-              <CardHeader><CardTitle>Notification Preferences</CardTitle><CardDescription>Configure how you receive alerts</CardDescription></CardHeader>
+              <CardHeader>
+                <CardTitle>Notification Preferences</CardTitle>
+                <CardDescription>Configure how you receive alerts</CardDescription>
+              </CardHeader>
               <CardContent className="space-y-4">
                 {[
                   { label: "Low Stock Alerts", description: "Get notified when products fall below minimum stock level", enabled: true },
@@ -75,7 +124,10 @@ export default function SettingsPage() {
                   { label: "Expense Approvals", description: "Notify when expenses need approval", enabled: true },
                 ].map((n) => (
                   <div key={n.label} className="flex items-center justify-between p-4 rounded-xl bg-gray-50">
-                    <div><p className="font-medium text-gray-900">{n.label}</p><p className="text-sm text-gray-500">{n.description}</p></div>
+                    <div>
+                      <p className="font-medium text-gray-900">{n.label}</p>
+                      <p className="text-sm text-gray-500">{n.description}</p>
+                    </div>
                     <Badge variant={n.enabled ? "success" : "secondary"}>{n.enabled ? "Enabled" : "Disabled"}</Badge>
                   </div>
                 ))}
@@ -85,7 +137,10 @@ export default function SettingsPage() {
 
           <TabsContent value="security">
             <Card>
-              <CardHeader><CardTitle>Security Settings</CardTitle><CardDescription>Manage security preferences</CardDescription></CardHeader>
+              <CardHeader>
+                <CardTitle>Security Settings</CardTitle>
+                <CardDescription>Manage security preferences</CardDescription>
+              </CardHeader>
               <CardContent className="space-y-4">
                 <div className="p-4 rounded-xl bg-gray-50">
                   <p className="font-medium text-gray-900">Two-Factor Authentication</p>

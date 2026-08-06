@@ -1,36 +1,97 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { TrendingUp, Users, Package, DollarSign, BarChart3, Activity } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/utils";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } };
 const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
 
-const topProducts = [
-  { name: "First Lady Red Palm Olein (5L)", sales: 120, revenue: 780000 },
-  { name: "First Lady Red Palm Olein (3L)", sales: 85, revenue: 340000 },
-  { name: "Purewave Soap (Family Pack)", sales: 95, revenue: 114000 },
-  { name: "Purewave Cream (Large)", sales: 60, revenue: 132000 },
-  { name: "First Lady Red Palm Olein (1L)", sales: 110, revenue: 165000 },
-];
-
-const hourlySales = [
-  { hour: "9AM", sales: 12 }, { hour: "10AM", sales: 19 }, { hour: "11AM", sales: 25 },
-  { hour: "12PM", sales: 32 }, { hour: "1PM", sales: 28 }, { hour: "2PM", sales: 35 },
-  { hour: "3PM", sales: 22 }, { hour: "4PM", sales: 18 }, { hour: "5PM", sales: 15 },
-];
-
-const salesByPayment = [
-  { name: "Cash", value: 45, color: "#10b981" },
-  { name: "Card", value: 30, color: "#3b82f6" },
-  { name: "Mobile", value: 25, color: "#8b5cf6" },
-];
+const COLORS = ["#10b981", "#3b82f6", "#8b5cf6", "#f59e0b", "#ef4444"];
 
 export default function AnalyticsPage() {
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<any>(null);
+
+  useEffect(() => {
+    Promise.all([
+      fetch("/api/dashboard").then((r) => r.json()),
+      fetch("/api/sales").then((r) => r.json()),
+      fetch("/api/products").then((r) => r.json()),
+      fetch("/api/customers").then((r) => r.json()),
+    ]).then(([dashboard, sales, products, customers]) => {
+      // Top products
+      const productSales: Record<string, { name: string; sales: number; revenue: number }> = {};
+      for (const sale of sales) {
+        for (const item of sale.items || []) {
+          const name = item.product?.name || "Unknown";
+          if (!productSales[item.productId]) {
+            productSales[item.productId] = { name, sales: 0, revenue: 0 };
+          }
+          productSales[item.productId].sales += item.quantity;
+          productSales[item.productId].revenue += Number(item.total);
+        }
+      }
+      const topProducts = Object.values(productSales)
+        .sort((a, b) => b.revenue - a.revenue)
+        .slice(0, 5);
+
+      // Payment method breakdown
+      const paymentMethods: Record<string, number> = {};
+      for (const sale of sales) {
+        paymentMethods[sale.paymentMethod] = (paymentMethods[sale.paymentMethod] || 0) + 1;
+      }
+      const totalSales = sales.length || 1;
+      const salesByPayment = Object.entries(paymentMethods).map(([name, count]) => ({
+        name,
+        value: Math.round((count / totalSales) * 100),
+        color: COLORS[Object.keys(paymentMethods).indexOf(name) % COLORS.length],
+      }));
+
+      // Hourly pattern from sale times
+      const hourlyData: Record<string, number> = {};
+      for (let h = 8; h <= 18; h++) {
+        hourlyData[`${h > 12 ? h - 12 : h}${h >= 12 ? "PM" : "AM"}`] = 0;
+      }
+      for (const sale of sales) {
+        const hour = new Date(sale.createdAt).getHours();
+        if (hour >= 8 && hour <= 18) {
+          const label = `${hour > 12 ? hour - 12 : hour}${hour >= 12 ? "PM" : "AM"}`;
+          hourlyData[label] = (hourlyData[label] || 0) + 1;
+        }
+      }
+      const hourlySales = Object.entries(hourlyData).map(([hour, count]) => ({ hour, sales: count }));
+
+      const totalRevenue = sales.reduce((s: number, sale: any) => s + Number(sale.totalAmount), 0);
+      const avgOrder = sales.length > 0 ? totalRevenue / sales.length : 0;
+
+      setData({
+        stats: {
+          avgOrderValue: avgOrder,
+          totalCustomers: customers.length,
+          totalProducts: products.length,
+          totalSales: sales.length,
+        },
+        topProducts,
+        salesByPayment,
+        hourlySales,
+      });
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
       <motion.div variants={item}>
@@ -40,16 +101,15 @@ export default function AnalyticsPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Avg. Order Value", value: formatCurrency(35750), change: "+5.2%", color: "blue" },
-          { label: "Conversion Rate", value: "68.5%", change: "+2.1%", color: "emerald" },
-          { label: "Customer Retention", value: "85.3%", change: "+1.8%", color: "purple" },
-          { label: "Revenue/Employee", value: formatCurrency(250000), change: "+8.5%", color: "amber" },
+          { label: "Avg. Order Value", value: formatCurrency(data?.stats?.avgOrderValue || 0) },
+          { label: "Total Customers", value: String(data?.stats?.totalCustomers || 0) },
+          { label: "Total Products", value: String(data?.stats?.totalProducts || 0) },
+          { label: "Total Transactions", value: String(data?.stats?.totalSales || 0) },
         ].map((stat) => (
           <Card key={stat.label}>
             <CardContent className="p-4">
               <p className="text-sm text-gray-500">{stat.label}</p>
               <p className="text-2xl font-bold text-gray-900 mt-1">{stat.value}</p>
-              <Badge variant="success" className="mt-2">{stat.change}</Badge>
             </CardContent>
           </Card>
         ))}
@@ -61,16 +121,20 @@ export default function AnalyticsPage() {
             <CardHeader><CardTitle>Top Selling Products</CardTitle></CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {topProducts.map((p, i) => (
-                  <div key={p.name} className="flex items-center gap-3 p-3 rounded-xl bg-gray-50">
-                    <span className="text-lg font-bold text-gray-400 w-6">#{i + 1}</span>
-                    <div className="flex-1">
-                      <p className="font-medium text-gray-900">{p.name}</p>
-                      <p className="text-sm text-gray-500">{p.sales} units sold</p>
+                {data?.topProducts?.length > 0 ? (
+                  data.topProducts.map((p: any, i: number) => (
+                    <div key={p.name} className="flex items-center gap-3 p-3 rounded-xl bg-gray-50">
+                      <span className="text-lg font-bold text-gray-400 w-6">#{i + 1}</span>
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900">{p.name}</p>
+                        <p className="text-sm text-gray-500">{p.sales} units sold</p>
+                      </div>
+                      <span className="font-semibold text-blue-600">{formatCurrency(p.revenue)}</span>
                     </div>
-                    <span className="font-semibold text-blue-600">{formatCurrency(p.revenue)}</span>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-400 text-center py-4">No sales data yet</p>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -82,7 +146,7 @@ export default function AnalyticsPage() {
             <CardContent>
               <div className="h-72">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={hourlySales}>
+                  <BarChart data={data?.hourlySales || []}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                     <XAxis dataKey="hour" stroke="#9ca3af" fontSize={12} />
                     <YAxis stroke="#9ca3af" fontSize={12} />
@@ -104,15 +168,17 @@ export default function AnalyticsPage() {
               <div className="h-64 w-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={salesByPayment} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={5} dataKey="value">
-                      {salesByPayment.map((entry, index) => (<Cell key={`cell-${index}`} fill={entry.color} />))}
+                    <Pie data={data?.salesByPayment || []} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={5} dataKey="value">
+                      {(data?.salesByPayment || []).map((entry: any, index: number) => (
+                        <Cell key={index} fill={entry.color} />
+                      ))}
                     </Pie>
                     <Tooltip />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
               <div className="ml-8 space-y-3">
-                {salesByPayment.map((p) => (
+                {(data?.salesByPayment || []).map((p: any) => (
                   <div key={p.name} className="flex items-center gap-3">
                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: p.color }} />
                     <span className="text-sm text-gray-600">{p.name}</span>
