@@ -1,5 +1,5 @@
-import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 const ROLE_ROUTES: Record<string, string[]> = {
   ADMIN: ["/admin", "/dashboard"],
@@ -8,32 +8,28 @@ const ROLE_ROUTES: Record<string, string[]> = {
   ACCOUNTANT: ["/accountant", "/dashboard"],
 };
 
-export default auth((req) => {
-  const { pathname } = req.nextUrl;
-  const session = req.auth;
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
 
-  if (pathname === "/login" || pathname.startsWith("/api/auth")) {
-    if (session) {
-      return NextResponse.redirect(new URL("/dashboard", req.url));
-    }
+  // Allow login page and API routes
+  if (pathname === "/login" || pathname.startsWith("/api/auth") || pathname.startsWith("/api/auth/register")) {
     return NextResponse.next();
   }
 
-  if (!session) {
-    return NextResponse.redirect(new URL("/login", req.url));
-  }
+  // Check for session cookie
+  const sessionCookie = request.cookies.get("next-auth.session-token") ||
+    request.cookies.get("__Secure-next-auth.session-token");
 
-  const role = session.user?.role as string;
-  const allowedRoutes = ROLE_ROUTES[role] || [];
-
-  const isAllowed = allowedRoutes.some((route) => pathname.startsWith(route));
-
-  if (!isAllowed && pathname !== "/dashboard" && pathname !== "/") {
-    return NextResponse.redirect(new URL("/dashboard", req.url));
+  // If no session, redirect to login
+  if (!sessionCookie) {
+    if (pathname === "/" || pathname === "/dashboard") {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
   return NextResponse.next();
-});
+}
 
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico|public).*)"],
