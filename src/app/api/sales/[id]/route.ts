@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { requireAuth } from "@/lib/api-auth";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const authResult = await requireAuth();
+  if (authResult.error) return authResult.error;
+
   try {
     const { id } = await params;
     const sale = await prisma.sale.findUnique({

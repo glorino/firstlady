@@ -1,8 +1,17 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { requireRole } from "@/lib/api-auth";
+import { requireAuth, requireRole } from "@/lib/api-auth";
+
+const ALLOWED_SETTINGS_KEYS = [
+  "storeName", "storeAddress", "storePhone", "storeEmail",
+  "taxRate", "currency", "receiptFooter",
+  "lowStockThreshold", "sessionTimeout",
+];
 
 export async function GET() {
+  const authResult = await requireAuth();
+  if (authResult.error) return authResult.error;
+
   try {
     const settings = await prisma.settings.findMany();
     const settingsMap: Record<string, string> = {};
@@ -23,6 +32,13 @@ export async function PUT(req: Request) {
     const body = await req.json();
 
     for (const [key, value] of Object.entries(body)) {
+      if (!ALLOWED_SETTINGS_KEYS.includes(key)) continue;
+
+      if (key === "taxRate") {
+        const num = Number(value);
+        if (isNaN(num) || num < 0 || num > 100) continue;
+      }
+
       await prisma.settings.upsert({
         where: { key },
         update: { value: String(value) },

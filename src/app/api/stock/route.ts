@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { requireAuth } from "@/lib/api-auth";
+import { requireRole } from "@/lib/api-auth";
 
 export async function GET() {
-  const authResult = await requireAuth();
+  const authResult = await requireRole("ADMIN", "WAREHOUSE", "ACCOUNTANT");
   if (authResult.error) return authResult.error;
 
   try {
@@ -18,7 +18,7 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const authResult = await requireAuth();
+  const authResult = await requireRole("ADMIN", "WAREHOUSE");
   if (authResult.error) return authResult.error;
 
   try {
@@ -39,18 +39,26 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Quantity must be positive" }, { status: 400 });
     }
 
-    // Validate stock won't go negative
-    const product = await prisma.product.findUnique({ where: { id: productId } });
-    if (!product) {
-      return NextResponse.json({ error: "Product not found" }, { status: 404 });
-    }
-
     const stockChange = type === "SALE" || type === "TRANSFER" ? -qty : qty;
-    if (product.stockQuantity + stockChange < 0) {
-      return NextResponse.json({ error: "Insufficient stock" }, { status: 400 });
-    }
 
+    // Atomic transaction — stock check and update in same transaction
     const movement = await prisma.$transaction(async (tx) => {
+      // Lock the row and check stock
+      const product = await tx.product.findUnique({ where: { id: productId } });
+      if (!product) {
+        throw new Error("Product not found");
+      }
+
+      const newStock = product.stockQuantity + stockChange;
+      if (newStock < 0) {
+        throw new Error("Insufficient stock");
+      }
+
+      await tx.product.update({
+        where: { id: productId },
+        data: { stockQuantity: newStock },
+      });
+
       const mov = await tx.stockMovement.create({
         data: {
           productId,
@@ -62,16 +70,17 @@ export async function POST(req: Request) {
         },
       });
 
-      await tx.product.update({
-        where: { id: productId },
-        data: { stockQuantity: product.stockQuantity + stockChange },
-      });
-
       return mov;
     });
 
     return NextResponse.json(movement, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
+    if (error.message === "Product not found") {
+      return NextResponse.json({ error: error.message }, { status: 404 });
+    }
+    if (error.message === "Insufficient stock") {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
     return NextResponse.json({ error: "Failed to create stock movement" }, { status: 500 });
   }
 }

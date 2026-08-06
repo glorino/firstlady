@@ -8,8 +8,15 @@ import { Badge } from "@/components/ui/badge";
 import { formatCurrency, cn } from "@/lib/utils";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 
-const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } };
+const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } } as const;
 const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
+
+const STAT_COLORS = [
+  { bg: "bg-blue-50", text: "text-blue-600" },
+  { bg: "bg-amber-50", text: "text-amber-600" },
+  { bg: "bg-red-50", text: "text-red-600" },
+  { bg: "bg-emerald-50", text: "text-emerald-600" },
+];
 
 export default function ProfitLossPage() {
   const [loading, setLoading] = useState(true);
@@ -20,11 +27,11 @@ export default function ProfitLossPage() {
       fetch("/api/sales").then((r) => r.json()),
       fetch("/api/expenses").then((r) => r.json()),
     ]).then(([sales, expenses]) => {
-      // Group by month
+      const COMPLETED_SALES = sales.filter((s: any) => s.status === "COMPLETED" || s.status === "PENDING");
       const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
       const monthlyMap: Record<string, { revenue: number; cogs: number; expenses: number; profit: number }> = {};
 
-      for (const sale of sales) {
+      for (const sale of COMPLETED_SALES) {
         const d = new Date(sale.createdAt);
         const key = months[d.getMonth()];
         if (!monthlyMap[key]) monthlyMap[key] = { revenue: 0, cogs: 0, expenses: 0, profit: 0 };
@@ -62,6 +69,13 @@ export default function ProfitLossPage() {
   const totalProfit = monthlyData.reduce((s, d) => s + d.profit, 0);
   const margin = totalRevenue > 0 ? ((totalProfit / totalRevenue) * 100).toFixed(1) : "0";
 
+  const stats = [
+    { label: "Total Revenue", value: formatCurrency(totalRevenue), icon: DollarSign, colorIdx: 0 },
+    { label: "Cost of Goods", value: formatCurrency(totalCogs), icon: TrendingDown, colorIdx: 1 },
+    { label: "Operating Expenses", value: formatCurrency(totalExpenses), icon: TrendingDown, colorIdx: 2 },
+    { label: "Net Profit", value: formatCurrency(totalProfit), icon: TrendingUp, colorIdx: 3, extra: `${margin}% margin` },
+  ];
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -78,27 +92,25 @@ export default function ProfitLossPage() {
       </motion.div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { label: "Total Revenue", value: formatCurrency(totalRevenue), icon: DollarSign, color: "blue" },
-          { label: "Cost of Goods", value: formatCurrency(totalCogs), icon: TrendingDown, color: "amber" },
-          { label: "Operating Expenses", value: formatCurrency(totalExpenses), icon: TrendingDown, color: "red" },
-          { label: "Net Profit", value: formatCurrency(totalProfit), icon: TrendingUp, color: "emerald", extra: `${margin}% margin` },
-        ].map((stat) => (
-          <motion.div variants={item} key={stat.label}>
-            <Card hover>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-3">
-                  <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", `bg-${stat.color}-50`)}>
-                    <stat.icon className={cn("w-5 h-5", `text-${stat.color}-600`)} />
+        {stats.map((stat) => {
+          const colors = STAT_COLORS[stat.colorIdx];
+          return (
+            <motion.div variants={item} key={stat.label}>
+              <Card hover>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", colors.bg)}>
+                      <stat.icon className={cn("w-5 h-5", colors.text)} />
+                    </div>
                   </div>
-                </div>
-                <p className="text-sm text-gray-500">{stat.label}</p>
-                <p className="text-xl font-bold text-gray-900 mt-1">{stat.value}</p>
-                {stat.extra && <p className="text-xs text-emerald-500 mt-1">{stat.extra}</p>}
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
+                  <p className="text-sm text-gray-500">{stat.label}</p>
+                  <p className="text-xl font-bold text-gray-900 mt-1">{stat.value}</p>
+                  {stat.extra && <p className="text-xs text-emerald-500 mt-1">{stat.extra}</p>}
+                </CardContent>
+              </Card>
+            </motion.div>
+          );
+        })}
       </div>
 
       {monthlyData.length > 0 && (

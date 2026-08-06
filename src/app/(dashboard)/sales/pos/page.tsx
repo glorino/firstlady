@@ -27,8 +27,16 @@ export default function POSPage() {
   const [processing, setProcessing] = useState(false);
   const [success, setSuccess] = useState(false);
 
+  const [taxRate, setTaxRate] = useState(7.5);
+
   useEffect(() => {
-    fetchProducts();
+    Promise.all([
+      fetch("/api/products").then((r) => r.json()),
+      fetch("/api/settings").then((r) => r.json()),
+    ]).then(([products, settings]) => {
+      setProducts(products);
+      if (settings.taxRate) setTaxRate(Number(settings.taxRate));
+    }).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
   const fetchProducts = async () => {
@@ -38,8 +46,6 @@ export default function POSPage() {
       setProducts(data);
     } catch (error) {
       console.error("Failed to fetch products");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -96,7 +102,6 @@ export default function POSPage() {
   };
 
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const taxRate = 7.5;
   const taxAmount = subtotal * (taxRate / 100);
   const total = subtotal + taxAmount;
   const change = parseFloat(amountPaid || "0") - total;
@@ -329,7 +334,7 @@ export default function POSPage() {
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">Payment Method</label>
                   <div className="grid grid-cols-3 gap-2">
-                    {(["CASH", "CARD", "MOBILE"] as PaymentMethod[]).map((method) => (
+                    {(["CASH", "CARD", "TRANSFER", "MOBILE"] as PaymentMethod[]).map((method) => (
                       <button
                         key={method}
                         onClick={() => setPaymentMethod(method)}

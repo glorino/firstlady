@@ -4,11 +4,10 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/utils";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
-const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } };
+const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } } as const;
 const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
 
 const COLORS = ["#10b981", "#3b82f6", "#8b5cf6", "#f59e0b", "#ef4444"];
@@ -19,14 +18,15 @@ export default function AnalyticsPage() {
 
   useEffect(() => {
     Promise.all([
-      fetch("/api/dashboard").then((r) => r.json()),
       fetch("/api/sales").then((r) => r.json()),
       fetch("/api/products").then((r) => r.json()),
       fetch("/api/customers").then((r) => r.json()),
-    ]).then(([dashboard, sales, products, customers]) => {
+    ]).then(([sales, products, customers]) => {
+      const COMPLETED_SALES = sales.filter((s: any) => s.status === "COMPLETED" || s.status === "PENDING");
+
       // Top products
       const productSales: Record<string, { name: string; sales: number; revenue: number }> = {};
-      for (const sale of sales) {
+      for (const sale of COMPLETED_SALES) {
         for (const item of sale.items || []) {
           const name = item.product?.name || "Unknown";
           if (!productSales[item.productId]) {
@@ -42,10 +42,10 @@ export default function AnalyticsPage() {
 
       // Payment method breakdown
       const paymentMethods: Record<string, number> = {};
-      for (const sale of sales) {
+      for (const sale of COMPLETED_SALES) {
         paymentMethods[sale.paymentMethod] = (paymentMethods[sale.paymentMethod] || 0) + 1;
       }
-      const totalSales = sales.length || 1;
+      const totalSales = COMPLETED_SALES.length || 1;
       const salesByPayment = Object.entries(paymentMethods).map(([name, count]) => ({
         name,
         value: Math.round((count / totalSales) * 100),
@@ -57,7 +57,7 @@ export default function AnalyticsPage() {
       for (let h = 8; h <= 18; h++) {
         hourlyData[`${h > 12 ? h - 12 : h}${h >= 12 ? "PM" : "AM"}`] = 0;
       }
-      for (const sale of sales) {
+      for (const sale of COMPLETED_SALES) {
         const hour = new Date(sale.createdAt).getHours();
         if (hour >= 8 && hour <= 18) {
           const label = `${hour > 12 ? hour - 12 : hour}${hour >= 12 ? "PM" : "AM"}`;
@@ -66,15 +66,16 @@ export default function AnalyticsPage() {
       }
       const hourlySales = Object.entries(hourlyData).map(([hour, count]) => ({ hour, sales: count }));
 
-      const totalRevenue = sales.reduce((s: number, sale: any) => s + Number(sale.totalAmount), 0);
-      const avgOrder = sales.length > 0 ? totalRevenue / sales.length : 0;
+      const totalRevenue = COMPLETED_SALES.reduce((s: number, sale: any) => s + Number(sale.totalAmount), 0);
+      const avgOrder = COMPLETED_SALES.length > 0 ? totalRevenue / COMPLETED_SALES.length : 0;
+      const activeProducts = products.filter((p: any) => p.isActive);
 
       setData({
         stats: {
           avgOrderValue: avgOrder,
           totalCustomers: customers.length,
-          totalProducts: products.length,
-          totalSales: sales.length,
+          totalProducts: activeProducts.length,
+          totalSales: COMPLETED_SALES.length,
         },
         topProducts,
         salesByPayment,
@@ -103,8 +104,8 @@ export default function AnalyticsPage() {
         {[
           { label: "Avg. Order Value", value: formatCurrency(data?.stats?.avgOrderValue || 0) },
           { label: "Total Customers", value: String(data?.stats?.totalCustomers || 0) },
-          { label: "Total Products", value: String(data?.stats?.totalProducts || 0) },
-          { label: "Total Transactions", value: String(data?.stats?.totalSales || 0) },
+          { label: "Active Products", value: String(data?.stats?.totalProducts || 0) },
+          { label: "Completed Sales", value: String(data?.stats?.totalSales || 0) },
         ].map((stat) => (
           <Card key={stat.label}>
             <CardContent className="p-4">

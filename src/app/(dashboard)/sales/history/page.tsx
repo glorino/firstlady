@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Search, Download, Loader2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -25,7 +25,7 @@ function exportCsv(sales: any[]) {
   const rows = sales.map((s) => [
     s.invoiceNumber,
     s.customer?.name || "Walk-in",
-    String(s.items?.length || 0),
+    String(s.items?.reduce((sum: number, i: any) => sum + i.quantity, 0) || 0),
     String(Number(s.totalAmount)),
     s.paymentMethod,
     s.status,
@@ -41,7 +41,7 @@ function exportCsv(sales: any[]) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `sales-history-${new Date().toISOString().split("T")[0]}.csv`;
+  a.download = "sales-history-" + new Date().toISOString().split("T")[0] + ".csv";
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -63,12 +63,12 @@ function exportPdf(sales: any[]) {
   doc.setFont("helvetica", "normal");
   doc.text("Sales History Report", 15, 21);
   doc.setFontSize(9);
-  doc.text(`Generated: ${new Date().toLocaleDateString("en-NG", { year: "numeric", month: "long", day: "numeric" })}`, 15, 27);
+  doc.text("Generated: " + new Date().toLocaleDateString("en-NG", { year: "numeric", month: "long", day: "numeric" }), 15, 27);
 
   const rows = sales.map((s) => [
     s.invoiceNumber,
     s.customer?.name || "Walk-in",
-    String(s.items?.length || 0),
+    String(s.items?.reduce((sum: number, i: any) => sum + i.quantity, 0) || 0),
     formatCurrency(Number(s.totalAmount)),
     s.paymentMethod,
     s.status,
@@ -77,7 +77,7 @@ function exportPdf(sales: any[]) {
 
   autoTable(doc, {
     startY: 36,
-    head: [["Invoice", "Customer", "Items", "Total", "Payment", "Status", "Date"]],
+    head: [["Invoice", "Customer", "Qty", "Total", "Payment", "Status", "Date"]],
     body: rows,
     theme: "grid",
     headStyles: { fillColor: [59, 130, 246], textColor: 255, fontStyle: "bold", fontSize: 9 },
@@ -92,14 +92,14 @@ function exportPdf(sales: any[]) {
     doc.setFontSize(8);
     doc.setTextColor(150);
     doc.text(
-      `Page ${i} of ${pageCount}  |  FirstLady POS & Stock Management`,
+      "Page " + i + " of " + pageCount + "  |  FirstLady POS & Stock Management",
       pageWidth / 2,
       doc.internal.pageSize.getHeight() - 10,
       { align: "center" }
     );
   }
 
-  doc.save(`sales-history-${new Date().toISOString().split("T")[0]}.pdf`);
+  doc.save("sales-history-" + new Date().toISOString().split("T")[0] + ".pdf");
 }
 
 export default function SalesHistoryPage() {
@@ -132,8 +132,8 @@ export default function SalesHistoryPage() {
     [sales, search]
   );
 
-  const totalRevenue = sales.reduce((sum, s) => sum + Number(s.totalAmount), 0);
-  const totalProfit = sales.reduce((sum, s) => {
+  const totalRevenue = filteredSales.reduce((sum, s) => sum + Number(s.totalAmount), 0);
+  const totalProfit = filteredSales.reduce((sum, s) => {
     const cogs = s.items?.reduce((c: number, i: any) => c + Number(i.costPrice || 0) * i.quantity, 0) || 0;
     return sum + (Number(s.totalAmount) - cogs);
   }, 0);
@@ -160,19 +160,19 @@ export default function SalesHistoryPage() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-4">
-            <p className="text-sm text-gray-500">Total Sales</p>
-            <p className="text-2xl font-bold text-gray-900 mt-1">{sales.length}</p>
+            <p className="text-sm text-gray-500">Filtered Sales</p>
+            <p className="text-2xl font-bold text-gray-900 mt-1">{filteredSales.length}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-sm text-gray-500">Total Revenue</p>
+            <p className="text-sm text-gray-500">Filtered Revenue</p>
             <p className="text-2xl font-bold text-emerald-600 mt-1">{formatCurrency(totalRevenue)}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-sm text-gray-500">Total Profit</p>
+            <p className="text-sm text-gray-500">Filtered Profit</p>
             <p className="text-2xl font-bold text-blue-600 mt-1">{formatCurrency(totalProfit)}</p>
           </CardContent>
         </Card>
@@ -203,7 +203,7 @@ export default function SalesHistoryPage() {
                   <TableRow>
                     <TableHead>Invoice</TableHead>
                     <TableHead>Customer</TableHead>
-                    <TableHead>Items</TableHead>
+                    <TableHead>Qty</TableHead>
                     <TableHead>Total</TableHead>
                     <TableHead>Payment</TableHead>
                     <TableHead>Status</TableHead>
@@ -222,7 +222,7 @@ export default function SalesHistoryPage() {
                       <TableRow key={sale.id}>
                         <TableCell className="font-mono text-sm font-semibold">{sale.invoiceNumber}</TableCell>
                         <TableCell>{sale.customer?.name || "Walk-in"}</TableCell>
-                        <TableCell>{sale.items?.length || 0} items</TableCell>
+                        <TableCell>{sale.items?.reduce((sum: number, i: any) => sum + i.quantity, 0) || 0}</TableCell>
                         <TableCell className="font-semibold">{formatCurrency(Number(sale.totalAmount))}</TableCell>
                         <TableCell>
                           <Badge variant="outline">{sale.paymentMethod}</Badge>

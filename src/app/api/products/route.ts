@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { requireAuth } from "@/lib/api-auth";
+import { requireAuth, requireRole } from "@/lib/api-auth";
 
 export async function GET() {
   const authResult = await requireAuth();
@@ -29,20 +29,25 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
+    if (Number(costPrice) < 0 || Number(sellingPrice) < 0) {
+      return NextResponse.json({ error: "Prices cannot be negative" }, { status: 400 });
+    }
+
+    // Whitelist allowed fields
     const product = await prisma.product.create({
       data: {
-        name: body.name,
-        sku: body.sku,
-        barcode: body.barcode || null,
-        description: body.description || null,
-        costPrice: Number(body.costPrice),
-        sellingPrice: Number(body.sellingPrice),
+        name: String(name),
+        sku: String(sku),
+        barcode: body.barcode ? String(body.barcode) : null,
+        description: body.description ? String(body.description) : null,
+        costPrice: Number(costPrice),
+        sellingPrice: Number(sellingPrice),
         stockQuantity: Number(body.stockQuantity) || 0,
         minStockLevel: Number(body.minStockLevel) || 5,
         maxStockLevel: Number(body.maxStockLevel) || 1000,
-        unit: body.unit || "pcs",
-        categoryId: body.categoryId,
-        supplierId: body.supplierId || null,
+        unit: body.unit ? String(body.unit) : "pcs",
+        categoryId: String(categoryId),
+        supplierId: body.supplierId ? String(body.supplierId) : null,
       },
       include: { category: true },
     });
@@ -51,5 +56,3 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Failed to create product" }, { status: 500 });
   }
 }
-
-import { requireRole } from "@/lib/api-auth";

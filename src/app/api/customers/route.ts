@@ -7,7 +7,10 @@ export async function GET() {
   if (authResult.error) return authResult.error;
 
   try {
-    const customers = await prisma.customer.findMany({ orderBy: { createdAt: "desc" } });
+    const customers = await prisma.customer.findMany({
+      orderBy: { createdAt: "desc" },
+      include: { _count: { select: { sales: true } } },
+    });
     return NextResponse.json(customers);
   } catch (error) {
     return NextResponse.json({ error: "Failed to fetch customers" }, { status: 500 });

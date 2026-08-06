@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { requireAuth, requireRole } from "@/lib/api-auth";
+import { requireRole } from "@/lib/api-auth";
 
 export async function GET() {
-  const authResult = await requireAuth();
+  const authResult = await requireRole("ADMIN");
   if (authResult.error) return authResult.error;
 
   try {

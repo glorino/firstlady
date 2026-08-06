@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { FileText, Download, BarChart3, PieChart, TrendingUp, Loader2, CheckCircle2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -17,9 +17,46 @@ type ReportDef = {
   name: string;
   description: string;
   icon: any;
-  color: string;
+  colorClass: string;
   fetcher: (period: string) => Promise<{ columns: string[]; data: (string | number)[][] }>;
 };
+
+const COLOR_MAP: Record<string, { bg: string; text: string }> = {
+  blue: { bg: "bg-blue-50", text: "text-blue-600" },
+  emerald: { bg: "bg-emerald-50", text: "text-emerald-600" },
+  purple: { bg: "bg-purple-50", text: "text-purple-600" },
+  amber: { bg: "bg-amber-50", text: "text-amber-600" },
+  red: { bg: "bg-red-50", text: "text-red-600" },
+  indigo: { bg: "bg-indigo-50", text: "text-indigo-600" },
+};
+
+function getDateRange(period: string): string {
+  const now = new Date();
+  const start = new Date();
+  switch (period) {
+    case "daily":
+      start.setHours(0, 0, 0, 0);
+      return start.toISOString();
+    case "weekly": {
+      const day = now.getDay();
+      start.setDate(now.getDate() - day);
+      start.setHours(0, 0, 0, 0);
+      return start.toISOString();
+    }
+    case "monthly":
+      start.setDate(1);
+      start.setHours(0, 0, 0, 0);
+      return start.toISOString();
+    default:
+      return "";
+  }
+}
+
+function filterByDate(items: any[], dateField: string, period: string): any[] {
+  const dateStart = getDateRange(period);
+  if (!dateStart) return items;
+  return items.filter((item) => new Date(item[dateField]) >= new Date(dateStart));
+}
 
 const REPORTS: ReportDef[] = [
   {
@@ -27,16 +64,17 @@ const REPORTS: ReportDef[] = [
     name: "Daily Sales Report",
     description: "Complete breakdown of sales transactions",
     icon: BarChart3,
-    color: "blue",
+    colorClass: "blue",
     fetcher: async (period) => {
       const res = await fetch("/api/sales");
       const sales = await res.json();
+      const filtered = filterByDate(sales, "createdAt", period);
       return {
         columns: ["Invoice", "Customer", "Items", "Amount", "Payment", "Status", "Date"],
-        data: sales.map((s: any) => [
+        data: filtered.map((s: any) => [
           s.invoiceNumber,
           s.customer?.name || "Walk-in",
-          String(s.items?.length || 0),
+          String(s.items?.reduce((sum: number, i: any) => sum + i.quantity, 0) || 0),
           formatCurrency(Number(s.totalAmount)),
           s.paymentMethod,
           s.status,
@@ -50,7 +88,7 @@ const REPORTS: ReportDef[] = [
     name: "Inventory Status Report",
     description: "Current stock levels and valuation",
     icon: PieChart,
-    color: "emerald",
+    colorClass: "emerald",
     fetcher: async () => {
       const res = await fetch("/api/products");
       const products = await res.json();
@@ -59,11 +97,11 @@ const REPORTS: ReportDef[] = [
         data: products.map((p: any) => [
           p.name,
           p.sku,
-          String(p.currentStock),
+          String(p.stockQuantity),
           String(p.minStockLevel),
           formatCurrency(Number(p.sellingPrice)),
-          formatCurrency(Number(p.sellingPrice) * p.currentStock),
-          p.currentStock <= p.minStockLevel ? "Low" : "Good",
+          formatCurrency(Number(p.sellingPrice) * p.stockQuantity),
+          p.stockQuantity <= p.minStockLevel ? "Low" : "Good",
         ]),
       };
     },
@@ -73,19 +111,19 @@ const REPORTS: ReportDef[] = [
     name: "Profit & Loss Report",
     description: "Revenue, costs, and profit analysis",
     icon: TrendingUp,
-    color: "purple",
-    fetcher: async () => {
-      const [salesRes, productsRes, expensesRes] = await Promise.all([
+    colorClass: "purple",
+    fetcher: async (period) => {
+      const [salesRes, expensesRes] = await Promise.all([
         fetch("/api/sales"),
-        fetch("/api/products"),
         fetch("/api/expenses"),
       ]);
       const sales = await salesRes.json();
-      const products = await productsRes.json();
       const expenses = await expensesRes.json();
+      const filteredSales = filterByDate(sales, "createdAt", period);
+      const filteredExpenses = filterByDate(expenses, "date", period);
 
       const categoryMap: Record<string, { revenue: number; cost: number }> = {};
-      for (const s of sales) {
+      for (const s of filteredSales) {
         for (const item of s.items || []) {
           const cat = item.product?.category?.name || "Uncategorized";
           if (!categoryMap[cat]) categoryMap[cat] = { revenue: 0, cost: 0 };
@@ -93,7 +131,7 @@ const REPORTS: ReportDef[] = [
           categoryMap[cat].cost += Number(item.costPrice || 0) * item.quantity;
         }
       }
-      const totalExpenses = expenses.reduce((s: number, e: any) => s + Number(e.amount), 0);
+      const totalExpenses = filteredExpenses.reduce((s: number, e: any) => s + Number(e.amount), 0);
 
       const rows: (string | number)[][] = [];
       let totRev = 0, totCost = 0;
@@ -117,7 +155,7 @@ const REPORTS: ReportDef[] = [
     name: "Customer Report",
     description: "Customer purchase history and totals",
     icon: FileText,
-    color: "amber",
+    colorClass: "amber",
     fetcher: async () => {
       const res = await fetch("/api/customers");
       const customers = await res.json();
@@ -128,8 +166,8 @@ const REPORTS: ReportDef[] = [
           c.phone || "-",
           c.email || "-",
           String(c._count?.sales || 0),
-          formatCurrency(Number(c.outstandingBalance || 0)),
-          Number(c.outstandingBalance) > 0 ? "Outstanding" : "Active",
+          formatCurrency(Number(c.balance || 0)),
+          Number(c.balance) > 0 ? "Outstanding" : "Active",
         ]),
       };
     },
@@ -139,18 +177,18 @@ const REPORTS: ReportDef[] = [
     name: "Expense Report",
     description: "Detailed expense breakdown",
     icon: FileText,
-    color: "red",
-    fetcher: async () => {
+    colorClass: "red",
+    fetcher: async (period) => {
       const res = await fetch("/api/expenses");
       const expenses = await res.json();
+      const filtered = filterByDate(expenses, "date", period);
       return {
-        columns: ["Category", "Amount", "Date", "Description", "Payment Method"],
-        data: expenses.map((e: any) => [
+        columns: ["Category", "Amount", "Date", "Description"],
+        data: filtered.map((e: any) => [
           e.category,
           formatCurrency(Number(e.amount)),
-          formatDate(e.createdAt),
+          formatDate(e.date || e.createdAt),
           e.description || "-",
-          e.paymentMethod || "-",
         ]),
       };
     },
@@ -160,13 +198,14 @@ const REPORTS: ReportDef[] = [
     name: "Stock Movement Report",
     description: "All inventory in/out movements",
     icon: FileText,
-    color: "indigo",
-    fetcher: async () => {
+    colorClass: "indigo",
+    fetcher: async (period) => {
       const res = await fetch("/api/stock");
       const movements = await res.json();
+      const filtered = filterByDate(movements, "createdAt", period);
       return {
         columns: ["Date", "Product", "Type", "Quantity", "Reference", "Notes"],
-        data: movements.map((m: any) => [
+        data: filtered.map((m: any) => [
           formatDate(m.createdAt),
           m.product?.name || "-",
           m.type,
@@ -260,7 +299,7 @@ export default function ReportsPage() {
             <SelectItem value="daily">Daily</SelectItem>
             <SelectItem value="weekly">Weekly</SelectItem>
             <SelectItem value="monthly">Monthly</SelectItem>
-            <SelectItem value="yearly">Yearly</SelectItem>
+            <SelectItem value="yearly">All Time</SelectItem>
           </SelectContent>
         </Select>
       </motion.div>
@@ -270,14 +309,15 @@ export default function ReportsPage() {
           const Icon = report.icon;
           const isGenerating = generatingId === report.id;
           const isGenerated = generatedIds.has(report.id);
+          const colors = COLOR_MAP[report.colorClass] || COLOR_MAP.blue;
 
           return (
             <motion.div variants={item} key={report.id}>
               <Card hover className="h-full">
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between mb-4">
-                    <div className={`w-12 h-12 rounded-xl bg-${report.color}-50 flex items-center justify-center`}>
-                      <Icon className={`w-6 h-6 text-${report.color}-600`} />
+                    <div className={`w-12 h-12 rounded-xl ${colors.bg} flex items-center justify-center`}>
+                      <Icon className={`w-6 h-6 ${colors.text}`} />
                     </div>
                     <Badge variant="outline">PDF</Badge>
                   </div>

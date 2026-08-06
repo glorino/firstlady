@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { requireAuth } from "@/lib/api-auth";
+import { requireAuth, requireRole } from "@/lib/api-auth";
 
 export async function GET() {
   const authResult = await requireAuth();
@@ -23,7 +23,7 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const authResult = await requireAuth();
+  const authResult = await requireRole("ADMIN", "SALES");
   if (authResult.error) return authResult.error;
 
   try {
@@ -57,9 +57,15 @@ export async function POST(req: Request) {
 
     const userId = authResult.user.id;
 
-    // Validate stock availability
+    // Validate stock availability and fetch costPrice from DB (not client)
+    const productIds = items.map((item: any) => item.productId);
+    const dbProducts = await prisma.product.findMany({
+      where: { id: { in: productIds } },
+    });
+    const productMap = new Map(dbProducts.map((p) => [p.id, p]));
+
     for (const item of items) {
-      const product = await prisma.product.findUnique({ where: { id: item.productId } });
+      const product = productMap.get(item.productId);
       if (!product) {
         return NextResponse.json({ error: `Product not found: ${item.productId}` }, { status: 400 });
       }
@@ -84,13 +90,16 @@ export async function POST(req: Request) {
           changeGiven: Math.max(0, paid - totalAmount),
           status: "COMPLETED",
           items: {
-            create: items.map((item: any) => ({
-              productId: item.productId,
-              quantity: item.quantity,
-              unitPrice: Number(item.unitPrice),
-              costPrice: Number(item.costPrice),
-              total: Number(item.unitPrice) * item.quantity,
-            })),
+            create: items.map((item: any) => {
+              const product = productMap.get(item.productId)!;
+              return {
+                productId: item.productId,
+                quantity: item.quantity,
+                unitPrice: Number(item.unitPrice),
+                costPrice: Number(product.costPrice),
+                total: Number(item.unitPrice) * item.quantity,
+              };
+            }),
           },
           payments: {
             create: {
@@ -103,16 +112,21 @@ export async function POST(req: Request) {
         include: { items: true },
       });
 
-      // Update stock atomically
+      // Update stock atomically using decrement
       for (const item of items) {
-        const product = await tx.product.findUnique({ where: { id: item.productId } });
-        const newStock = product!.stockQuantity - item.quantity;
-        if (newStock < 0) throw new Error("Stock cannot go below zero");
-
-        await tx.product.update({
-          where: { id: item.productId },
-          data: { stockQuantity: newStock },
+        const result = await tx.product.updateMany({
+          where: {
+            id: item.productId,
+            stockQuantity: { gte: item.quantity },
+          },
+          data: {
+            stockQuantity: { decrement: item.quantity },
+          },
         });
+
+        if (result.count === 0) {
+          throw new Error(`Insufficient stock for product ${item.productId}`);
+        }
 
         await tx.stockMovement.create({
           data: {
