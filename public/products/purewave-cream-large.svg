@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <rect width="200" height="200" rx="20" fill="#FDF2F8"/>
+  <!-- Jar body -->
+  <ellipse cx="100" cy="130" rx="55" ry="35" fill="#EC4899"/>
+  <ellipse cx="100" cy="130" rx="55" ry="35" fill="url(#creamL)"/>
+  <rect x="45" y="80" width="110" height="55" rx="8" fill="#EC4899"/>
+  <!-- Lid -->
+  <ellipse cx="100" cy="82" rx="55" ry="12" fill="#DB2777"/>
+  <rect x="45" y="72" width="110" height="14" rx="6" fill="#DB2777"/>
+  <!-- Lid highlight -->
+  <ellipse cx="100" cy="76" rx="45" ry="6" fill="white" fill-opacity="0.15"/>
+  <!-- Label -->
+  <rect x="58" y="95" width="84" height="35" rx="5" fill="white" fill-opacity="0.9"/>
+  <text x="100" y="110" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" font-weight="bold" fill="#EC4899">PUREWAVE</text>
+  <text x="100" y="122" text-anchor="middle" font-family="Arial,sans-serif" font-size="7" fill="#BE185D">Body Cream</text>
+  <text x="100" y="130" text-anchor="middle" font-family="Arial,sans-serif" font-size="6" fill="#F472B6">Large</text>
+  <defs>
+    <linearGradient id="creamL" x1="45" y1="80" x2="155" y2="165">
+      <stop offset="0%" stop-color="#F472B6" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#EC4899" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+</svg>

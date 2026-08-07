@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <rect width="200" height="200" rx="20" fill="#FFF7ED"/>
+  <!-- Bottle body -->
+  <rect x="65" y="50" width="70" height="105" rx="8" fill="#EA580C"/>
+  <rect x="65" y="50" width="70" height="105" rx="8" fill="url(#oil1L)"/>
+  <!-- Neck -->
+  <rect x="80" y="35" width="40" height="20" rx="5" fill="#C2410C"/>
+  <!-- Cap -->
+  <rect x="84" y="28" width="32" height="10" rx="4" fill="#DC2626"/>
+  <!-- Label -->
+  <rect x="72" y="72" width="56" height="45" rx="4" fill="white" fill-opacity="0.9"/>
+  <text x="100" y="90" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" font-weight="bold" fill="#EA580C">FIRST LADY</text>
+  <text x="100" y="100" text-anchor="middle" font-family="Arial,sans-serif" font-size="6" fill="#9A3412">Red Palm Olein</text>
+  <text x="100" y="112" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" font-weight="bold" fill="#EA580C">1L</text>
+  <!-- Oil level -->
+  <rect x="70" y="128" width="60" height="22" rx="4" fill="#FED7AA"/>
+  <rect x="70" y="134" width="60" height="16" rx="4" fill="#FB923C"/>
+  <defs>
+    <linearGradient id="oil1L" x1="65" y1="50" x2="135" y2="155">
+      <stop offset="0%" stop-color="#F97316" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#EA580C" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+</svg>

@@ -35,6 +35,7 @@ interface Product {
   maxStockLevel: number;
   unit: string;
   isActive: boolean;
+  image?: string | null;
   category: { id: string; name: string };
   supplier?: { id: string; name: string };
 }
@@ -60,6 +61,7 @@ export default function ProductsPage() {
     unit: "pcs",
     categoryId: "",
     supplierId: "",
+    image: "",
   });
 
   useEffect(() => {
@@ -143,7 +145,7 @@ export default function ProductsPage() {
     setFormData({
       name: "", sku: "", barcode: "", description: "", costPrice: "",
       sellingPrice: "", stockQuantity: "", minStockLevel: "5",
-      maxStockLevel: "1000", unit: "pcs", categoryId: "", supplierId: "",
+      maxStockLevel: "1000", unit: "pcs", categoryId: "", supplierId: "", image: "",
     });
   };
 
@@ -214,8 +216,12 @@ export default function ProductsPage() {
                       <TableRow key={product.id}>
                         <TableCell>
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center">
-                              <Package className="w-5 h-5 text-gray-400" />
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center overflow-hidden flex-shrink-0">
+                              {product.image ? (
+                                <img src={product.image} alt="" className="w-full h-full object-contain" />
+                              ) : (
+                                <Package className="w-5 h-5 text-gray-400" />
+                              )}
                             </div>
                             <div>
                               <p className="font-medium text-gray-900">{product.name}</p>
@@ -266,6 +272,7 @@ export default function ProductsPage() {
                                   unit: product.unit,
                                   categoryId: product.category?.id || "",
                                   supplierId: product.supplier?.id || "",
+                                  image: product.image || "",
                                 });
                                 setShowDialog(true);
                               }}
@@ -303,17 +310,18 @@ export default function ProductsPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <Input label="Barcode" value={formData.barcode} onChange={(e) => setFormData({ ...formData, barcode: e.target.value })} />
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium text-gray-700">Category</label>
-                <Select value={formData.categoryId} onValueChange={(v) => setFormData({ ...formData, categoryId: v })}>
-                  <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
-                  <SelectContent>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <Input label="Image URL" value={formData.image} onChange={(e) => setFormData({ ...formData, image: e.target.value })} placeholder="/products/example.svg" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-gray-700">Category</label>
+              <Select value={formData.categoryId} onValueChange={(v) => setFormData({ ...formData, categoryId: v })}>
+                <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <Input label="Cost Price (₦)" type="number" step="0.01" value={formData.costPrice} onChange={(e) => setFormData({ ...formData, costPrice: e.target.value })} required />

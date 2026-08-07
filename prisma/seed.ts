@@ -127,6 +127,7 @@ async function main() {
       categoryId: foodOils.id,
       supplierId: supplier1.id,
       description: "Premium quality red palm oil, 5 litre gallon",
+      image: "/products/first-lady-5l.svg",
     },
     {
       name: "First Lady Red Palm Olein (3L)",
@@ -140,6 +141,7 @@ async function main() {
       categoryId: foodOils.id,
       supplierId: supplier1.id,
       description: "Premium quality red palm oil, 3 litre bottle",
+      image: "/products/first-lady-3l.svg",
     },
     {
       name: "First Lady Red Palm Olein (1L)",
@@ -153,6 +155,7 @@ async function main() {
       categoryId: foodOils.id,
       supplierId: supplier1.id,
       description: "Premium quality red palm oil, 1 litre bottle",
+      image: "/products/first-lady-1l.svg",
     },
     {
       name: "Purewave Soap (Family Pack)",
@@ -166,6 +169,7 @@ async function main() {
       categoryId: toiletries.id,
       supplierId: supplier2.id,
       description: "Purewave bathing soap, family size bar",
+      image: "/products/purewave-soap-family.svg",
     },
     {
       name: "Purewave Soap (Regular)",
@@ -179,6 +183,7 @@ async function main() {
       categoryId: toiletries.id,
       supplierId: supplier2.id,
       description: "Purewave bathing soap, standard bar",
+      image: "/products/purewave-soap-regular.svg",
     },
     {
       name: "Purewave Cream (Large)",
@@ -192,6 +197,7 @@ async function main() {
       categoryId: toiletries.id,
       supplierId: supplier2.id,
       description: "Purewave body cream, large tub",
+      image: "/products/purewave-cream-large.svg",
     },
     {
       name: "Purewave Cream (Medium)",
@@ -205,6 +211,7 @@ async function main() {
       categoryId: toiletries.id,
       supplierId: supplier2.id,
       description: "Purewave body cream, medium size",
+      image: "/products/purewave-cream-medium.svg",
     },
     {
       name: "Purewave Cream (Small)",
@@ -218,6 +225,7 @@ async function main() {
       categoryId: toiletries.id,
       supplierId: supplier2.id,
       description: "Purewave body cream, travel size",
+      image: "/products/purewave-cream-small.svg",
     },
   ];
 
@@ -232,6 +240,7 @@ async function main() {
         minStockLevel: product.minStockLevel,
         maxStockLevel: product.maxStockLevel,
         description: product.description,
+        image: product.image,
       },
       create: product,
     });

@@ -199,8 +199,16 @@ export default function POSPage() {
                     )}
                     disabled={product.stockQuantity <= 0}
                   >
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center mb-3">
-                      <Package className="w-6 h-6 text-gray-400" />
+                    <div className="w-full h-28 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center mb-3 overflow-hidden">
+                      {product.image ? (
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className="w-full h-full object-contain p-1"
+                        />
+                      ) : (
+                        <Package className="w-10 h-10 text-gray-300" />
+                      )}
                     </div>
                     <h3 className="font-semibold text-gray-900 text-sm truncate">{product.name}</h3>
                     <p className="text-xs text-gray-400 mt-0.5">{product.sku}</p>

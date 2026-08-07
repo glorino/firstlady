@@ -63,6 +63,7 @@ export async function POST(req: Request) {
         unit: body.unit ? String(body.unit) : "pcs",
         categoryId: String(categoryId),
         supplierId: body.supplierId ? String(body.supplierId) : null,
+        image: body.image ? String(body.image) : null,
       },
       include: { category: true },
     });
