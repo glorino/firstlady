@@ -32,6 +32,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json(paginatedResponse(sales, total, { page, limit, skip }));
   } catch (error) {
+    console.error("Failed to fetch sales:", error);
     return NextResponse.json({ error: "Failed to fetch sales" }, { status: 500 });
   }
 }
@@ -71,7 +72,7 @@ export async function POST(req: Request) {
 
     const userId = authResult.user.id;
 
-    // Validate stock availability and fetch costPrice from DB (not client)
+    // Validate stock availability, costPrice, and unitPrice from DB (not client)
     const productIds = items.map((item: any) => item.productId);
     const dbProducts = await prisma.product.findMany({
       where: { id: { in: productIds } },
@@ -85,6 +86,12 @@ export async function POST(req: Request) {
       }
       if (product.stockQuantity < item.quantity) {
         return NextResponse.json({ error: `Insufficient stock for ${product.name}` }, { status: 400 });
+      }
+      // Validate unitPrice matches DB sellingPrice (prevent price manipulation)
+      const dbPrice = Number(product.sellingPrice);
+      const clientPrice = Number(item.unitPrice);
+      if (Math.abs(dbPrice - clientPrice) > 0.01) {
+        return NextResponse.json({ error: `Price mismatch for ${product.name}: expected ${dbPrice}, got ${clientPrice}` }, { status: 400 });
       }
     }
 
@@ -109,9 +116,9 @@ export async function POST(req: Request) {
               return {
                 productId: item.productId,
                 quantity: item.quantity,
-                unitPrice: Number(item.unitPrice),
+                unitPrice: Number(product.sellingPrice),
                 costPrice: Number(product.costPrice),
-                total: Number(item.unitPrice) * item.quantity,
+                total: Number(product.sellingPrice) * item.quantity,
               };
             }),
           },

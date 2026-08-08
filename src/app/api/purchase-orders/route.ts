@@ -28,6 +28,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json(paginatedResponse(orders, total, { page, limit, skip }));
   } catch (error) {
+    console.error("Failed to fetch purchase orders:", error);
     return NextResponse.json({ error: "Failed to fetch purchase orders" }, { status: 500 });
   }
 }

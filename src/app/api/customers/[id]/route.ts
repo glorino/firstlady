@@ -15,7 +15,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     }
     const customer = await prisma.customer.update({ where: { id }, data: allowedFields });
     return NextResponse.json(customer);
-  } catch (error) {
+  } catch (error: any) {
+    console.error("Failed to update customer:", error);
+    if (error?.code === "P2025") return NextResponse.json({ error: "Customer not found" }, { status: 404 });
     return NextResponse.json({ error: "Failed to update customer" }, { status: 500 });
   }
 }
@@ -28,7 +30,9 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
     const { id } = await params;
     await prisma.customer.delete({ where: { id } });
     return NextResponse.json({ message: "Customer deleted" });
-  } catch (error) {
+  } catch (error: any) {
+    console.error("Failed to delete customer:", error);
+    if (error?.code === "P2025") return NextResponse.json({ error: "Customer not found" }, { status: 404 });
     return NextResponse.json({ error: "Failed to delete customer" }, { status: 500 });
   }
 }

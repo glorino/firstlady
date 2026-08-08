@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Search, ArrowUpRight, ArrowDownRight, RefreshCw, Loader2, Plus, Minus } from "lucide-react";
+import { Search, ArrowUpRight, ArrowDownRight, RefreshCw, Loader2, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,13 +48,20 @@ export default function StockMovementsPage() {
     e.preventDefault();
     setSaving(true);
     try {
-      await fetch("/api/stock", {
+      const res = await fetch("/api/stock", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...form, quantity: parseInt(form.quantity) }),
       });
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || "Failed to record stock movement");
+        return;
+      }
       setShowDialog(false); setForm({ productId: "", type: "PURCHASE", quantity: "", notes: "" });
       fetchMovements(); fetchProducts();
+    } catch {
+      alert("Network error. Please try again.");
     } finally { setSaving(false); }
   };
 

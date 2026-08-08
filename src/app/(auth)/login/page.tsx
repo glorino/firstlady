@@ -230,17 +230,15 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          {/* Demo Accounts */}
+          {/* Demo Accounts — dev only */}
+          {process.env.NODE_ENV === "development" && (
           <div className="mt-8 p-5 rounded-2xl bg-gray-50/80 border border-gray-100">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Quick Access — Demo Accounts</p>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Demo Accounts</p>
             <div className="grid grid-cols-2 gap-2">
               {demoAccounts.map((acc) => (
                 <button
                   key={acc.email}
-                  onClick={() => {
-                    setEmail(acc.email);
-                    setPassword("password123");
-                  }}
+                  onClick={() => setEmail(acc.email)}
                   className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white border border-gray-100 hover:border-gray-200 hover:shadow-sm transition-all text-left group"
                 >
                   <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${acc.color} flex items-center justify-center flex-shrink-0`}>
@@ -253,8 +251,8 @@ export default function LoginPage() {
                 </button>
               ))}
             </div>
-            <p className="text-[10px] text-gray-400 mt-3 text-center">Password for all: <span className="font-medium text-gray-500">password123</span></p>
           </div>
+          )}
         </motion.div>
       </div>
     </div>

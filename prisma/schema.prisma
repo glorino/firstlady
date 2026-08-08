@@ -194,6 +194,7 @@ model Payment {
 
   sale          Sale          @relation(fields: [saleId], references: [id], onDelete: Cascade)
 
+  @@index([saleId])
   @@map("payments")
 }
 
@@ -225,6 +226,8 @@ model PurchaseOrderItem {
   purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
   product         Product       @relation(fields: [productId], references: [id], onDelete: Restrict)
 
+  @@index([purchaseOrderId])
+  @@index([productId])
   @@map("purchase_order_items")
 }
 
@@ -242,6 +245,7 @@ model StockMovement {
   user        User              @relation(fields: [userId], references: [id], onDelete: Restrict)
 
   @@index([productId])
+  @@index([userId])
   @@index([createdAt])
   @@map("stock_movements")
 }
@@ -261,6 +265,9 @@ model Expense {
 
   user        User          @relation(fields: [userId], references: [id], onDelete: Restrict)
 
+  @@index([userId])
+  @@index([category])
+  @@index([status])
   @@index([date])
   @@map("expenses")
 }

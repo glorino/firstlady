@@ -28,7 +28,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       select: { id: true, name: true, email: true, role: true, phone: true, isActive: true },
     });
     return NextResponse.json(user);
-  } catch (error) {
+  } catch (error: any) {
+    console.error("Failed to update user:", error);
+    if (error?.code === "P2025") return NextResponse.json({ error: "User not found" }, { status: 404 });
     return NextResponse.json({ error: "Failed to update user" }, { status: 500 });
   }
 }
@@ -44,7 +46,9 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
     }
     await prisma.user.delete({ where: { id } });
     return NextResponse.json({ message: "User deleted" });
-  } catch (error) {
+  } catch (error: any) {
+    console.error("Failed to delete user:", error);
+    if (error?.code === "P2025") return NextResponse.json({ error: "User not found" }, { status: 404 });
     return NextResponse.json({ error: "Failed to delete user" }, { status: 500 });
   }
 }

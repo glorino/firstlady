@@ -49,6 +49,7 @@ const ROLE_NAV: Record<Role, NavGroup[]> = {
         { label: "Purchase Orders", href: "/warehouse/purchase-orders", icon: ClipboardList },
         { label: "Sales History", href: "/sales/history", icon: ClipboardList },
         { label: "Expenses", href: "/accountant/expenses", icon: Receipt },
+        { label: "Reports", href: "/accountant/reports", icon: FileText },
       ],
     },
   ],
@@ -76,7 +77,7 @@ const ROLE_NAV: Record<Role, NavGroup[]> = {
         { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
         { label: "Products", href: "/warehouse/products", icon: Package },
         { label: "Stock Movements", href: "/warehouse/stock", icon: TrendingUp },
-        { label: "Categories", href: "/warehouse/products#categories", icon: Tags },
+        { label: "Categories", href: "/warehouse/products", icon: Tags },
       ],
     },
     {

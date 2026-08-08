@@ -92,9 +92,12 @@ export default function UsersPage() {
         setEditingUser(null);
         setFormData({ name: "", email: "", password: "", role: "SALES", phone: "" });
         fetchUsers();
+      } else {
+        const data = await res.json();
+        alert(data.error || "Failed to save user");
       }
-    } catch (error) {
-      console.error("Failed to save user");
+    } catch {
+      alert("Network error. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -103,10 +106,15 @@ export default function UsersPage() {
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this user?")) return;
     try {
-      await fetch(`/api/users/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/users/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || "Failed to delete user");
+        return;
+      }
       fetchUsers();
-    } catch (error) {
-      console.error("Failed to delete user");
+    } catch {
+      alert("Network error. Please try again.");
     }
   };
 

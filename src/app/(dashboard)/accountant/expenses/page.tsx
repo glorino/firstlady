@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Plus, Search, Receipt, Loader2, CheckCircle2, XCircle, Clock } from "lucide-react";
+import { Plus, Search, Receipt, Loader2, CheckCircle2, XCircle, Clock, Trash2, Check, Ban } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +19,9 @@ const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
 const EXPENSE_CATEGORIES = ["Rent", "Utilities", "Salaries", "Marketing", "Transport", "Office Supplies", "Maintenance", "Insurance", "Taxes", "Other"];
 
 export default function ExpensesPage() {
+  const { data: session } = useSession();
+  const user = session?.user as any;
+  const isAdmin = user?.role === "ADMIN";
   const [expenses, setExpenses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -34,9 +38,49 @@ export default function ExpensesPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); setSaving(true);
     try {
-      await fetch("/api/expenses", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...form, amount: parseFloat(form.amount) }) });
+      const res = await fetch("/api/expenses", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...form, amount: parseFloat(form.amount) }) });
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || "Failed to create expense");
+        return;
+      }
       setShowDialog(false); setForm({ title: "", description: "", amount: "", category: "Other", date: new Date().toISOString().split("T")[0] }); fetchExpenses();
+    } catch {
+      alert("Network error. Please try again.");
     } finally { setSaving(false); }
+  };
+
+  const handleStatusChange = async (id: string, status: string) => {
+    try {
+      const res = await fetch(`/api/expenses/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || "Failed to update expense");
+        return;
+      }
+      fetchExpenses();
+    } catch {
+      alert("Network error. Please try again.");
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Delete this expense?")) return;
+    try {
+      const res = await fetch(`/api/expenses/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || "Failed to delete expense");
+        return;
+      }
+      fetchExpenses();
+    } catch {
+      alert("Network error. Please try again.");
+    }
   };
 
   const filtered = expenses.filter(e => e.title.toLowerCase().includes(search.toLowerCase()));
@@ -64,7 +108,7 @@ export default function ExpensesPage() {
           <CardContent>
             {loading ? <div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-blue-600" /></div> : (
               <Table>
-                <TableHeader><TableRow><TableHead>Title</TableHead><TableHead>Category</TableHead><TableHead>Amount</TableHead><TableHead>Status</TableHead><TableHead>Date</TableHead></TableRow></TableHeader>
+                <TableHeader><TableRow><TableHead>Title</TableHead><TableHead>Category</TableHead><TableHead>Amount</TableHead><TableHead>Status</TableHead><TableHead>Date</TableHead><TableHead>Actions</TableHead></TableRow></TableHeader>
                 <TableBody>
                   {filtered.map((e) => {
                     const Icon = statusIcons[e.status] || Clock;
@@ -75,6 +119,25 @@ export default function ExpensesPage() {
                         <TableCell className="font-semibold text-red-600">{formatCurrency(Number(e.amount))}</TableCell>
                         <TableCell><Badge variant={statusColors[e.status] as any} className="flex items-center gap-1 w-fit"><Icon className="w-3 h-3" />{e.status}</Badge></TableCell>
                         <TableCell className="text-sm text-gray-500">{formatDate(e.date)}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            {isAdmin && e.status === "PENDING" && (
+                              <>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-emerald-600 hover:text-emerald-700" onClick={() => handleStatusChange(e.id, "APPROVED")} title="Approve">
+                                  <Check className="w-4 h-4" />
+                                </Button>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-red-600 hover:text-red-700" onClick={() => handleStatusChange(e.id, "REJECTED")} title="Reject">
+                                  <Ban className="w-4 h-4" />
+                                </Button>
+                              </>
+                            )}
+                            {isAdmin && (
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-700" onClick={() => handleDelete(e.id)} title="Delete">
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
                       </TableRow>
                     );
                   })}

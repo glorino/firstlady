@@ -28,6 +28,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json(paginatedResponse(expenses, total, { page, limit, skip }));
   } catch (error) {
+    console.error("Failed to fetch expenses:", error);
     return NextResponse.json({ error: "Failed to fetch expenses" }, { status: 500 });
   }
 }
@@ -60,6 +61,7 @@ export async function POST(req: Request) {
     });
     return NextResponse.json(expense, { status: 201 });
   } catch (error) {
+    console.error("Failed to create expense:", error);
     return NextResponse.json({ error: "Failed to create expense" }, { status: 500 });
   }
 }

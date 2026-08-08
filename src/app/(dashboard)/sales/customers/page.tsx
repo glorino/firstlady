@@ -39,16 +39,32 @@ export default function CustomersPage() {
     try {
       const url = editing ? `/api/customers/${editing.id}` : "/api/customers";
       const method = editing ? "PUT" : "POST";
-      await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
+      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || "Failed to save customer");
+        return;
+      }
       setShowDialog(false); setEditing(null); setForm({ name: "", email: "", phone: "", address: "" });
       fetchCustomers();
+    } catch {
+      alert("Network error. Please try again.");
     } finally { setSaving(false); }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this customer?")) return;
-    await fetch(`/api/customers/${id}`, { method: "DELETE" });
-    fetchCustomers();
+    try {
+      const res = await fetch(`/api/customers/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || "Failed to delete customer");
+        return;
+      }
+      fetchCustomers();
+    } catch {
+      alert("Network error. Please try again.");
+    }
   };
 
   const filtered = customers.filter(c => c.name.toLowerCase().includes(search.toLowerCase()) || c.email?.toLowerCase().includes(search.toLowerCase()));

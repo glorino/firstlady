@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Settings, Store, Bell, Shield, Save, Loader2 } from "lucide-react";
+import { Store, Bell, Shield, Save, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,7 +37,7 @@ export default function SettingsPage() {
         }
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch((e) => { console.error("Failed to fetch settings:", e); setLoading(false); });
   }, []);
 
   const handleSave = async () => {

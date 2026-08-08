@@ -18,6 +18,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json(paginatedResponse(suppliers, total, { page, limit, skip }));
   } catch (error) {
+    console.error("Failed to fetch suppliers:", error);
     return NextResponse.json({ error: "Failed to fetch suppliers" }, { status: 500 });
   }
 }
@@ -41,6 +42,7 @@ export async function POST(req: Request) {
     });
     return NextResponse.json(supplier, { status: 201 });
   } catch (error) {
+    console.error("Failed to create supplier:", error);
     return NextResponse.json({ error: "Failed to create supplier" }, { status: 500 });
   }
 }

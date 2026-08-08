@@ -15,7 +15,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     }
     const supplier = await prisma.supplier.update({ where: { id }, data: allowedFields });
     return NextResponse.json(supplier);
-  } catch (error) {
+  } catch (error: any) {
+    console.error("Failed to update supplier:", error);
+    if (error?.code === "P2025") return NextResponse.json({ error: "Supplier not found" }, { status: 404 });
     return NextResponse.json({ error: "Failed to update supplier" }, { status: 500 });
   }
 }
@@ -28,7 +30,9 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
     const { id } = await params;
     await prisma.supplier.delete({ where: { id } });
     return NextResponse.json({ message: "Supplier deleted" });
-  } catch (error) {
+  } catch (error: any) {
+    console.error("Failed to delete supplier:", error);
+    if (error?.code === "P2025") return NextResponse.json({ error: "Supplier not found" }, { status: 404 });
     return NextResponse.json({ error: "Failed to delete supplier" }, { status: 500 });
   }
 }

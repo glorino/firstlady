@@ -123,9 +123,12 @@ export default function ProductsPage() {
         setEditingProduct(null);
         resetForm();
         fetchProducts();
+      } else {
+        const data = await res.json();
+        alert(data.error || "Failed to save product");
       }
-    } catch (error) {
-      console.error("Failed to save product");
+    } catch {
+      alert("Network error. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -134,10 +137,15 @@ export default function ProductsPage() {
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this product?")) return;
     try {
-      await fetch(`/api/products/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/products/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || "Failed to delete product");
+        return;
+      }
       fetchProducts();
-    } catch (error) {
-      console.error("Failed to delete product");
+    } catch {
+      alert("Network error. Please try again.");
     }
   };
 

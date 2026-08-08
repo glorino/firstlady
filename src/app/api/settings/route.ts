@@ -20,6 +20,7 @@ export async function GET() {
     }
     return NextResponse.json(settingsMap);
   } catch (error) {
+    console.error("Failed to fetch settings:", error);
     return NextResponse.json({ error: "Failed to fetch settings" }, { status: 500 });
   }
 }
@@ -48,6 +49,7 @@ export async function PUT(req: Request) {
 
     return NextResponse.json({ message: "Settings saved" });
   } catch (error) {
+    console.error("Failed to save settings:", error);
     return NextResponse.json({ error: "Failed to save settings" }, { status: 500 });
   }
 }

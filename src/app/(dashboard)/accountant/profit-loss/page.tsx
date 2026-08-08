@@ -29,7 +29,7 @@ export default function ProfitLossPage() {
     ]).then(([salesRes, expensesRes]) => {
       const sales = salesRes.data || salesRes;
       const expenses = expensesRes.data || expensesRes;
-      const COMPLETED_SALES = sales.filter((s: any) => s.status === "COMPLETED" || s.status === "PENDING");
+      const COMPLETED_SALES = sales.filter((s: any) => s.status === "COMPLETED");
       const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
       const monthlyMap: Record<string, { revenue: number; cogs: number; expenses: number; profit: number }> = {};
 
@@ -62,7 +62,7 @@ export default function ProfitLossPage() {
 
       setMonthlyData(data);
       setLoading(false);
-    }).catch(() => setLoading(false));
+    }).catch((e) => { console.error("Failed to fetch P&L data:", e); setLoading(false); });
   }, []);
 
   const totalRevenue = monthlyData.reduce((s, d) => s + d.revenue, 0);

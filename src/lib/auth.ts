@@ -23,12 +23,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           });
 
           if (!user) {
-            console.error("[AUTH] User not found:", credentials.email);
+            console.error("[AUTH] Authentication failed");
             return null;
           }
 
           if (!user.isActive) {
-            console.error("[AUTH] User inactive:", credentials.email);
+            console.error("[AUTH] Authentication failed");
             return null;
           }
 
@@ -38,7 +38,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           );
 
           if (!isValid) {
-            console.error("[AUTH] Invalid password for:", credentials.email);
+            console.error("[AUTH] Authentication failed");
             return null;
           }
 

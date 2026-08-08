@@ -19,6 +19,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
     return NextResponse.json(order);
   } catch (error) {
+    console.error("Failed to fetch purchase order:", error);
     return NextResponse.json({ error: "Failed to fetch purchase order" }, { status: 500 });
   }
 }
@@ -54,7 +55,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     });
 
     return NextResponse.json(order);
-  } catch (error) {
+  } catch (error: any) {
+    console.error("Failed to update purchase order:", error);
+    if (error?.code === "P2025") return NextResponse.json({ error: "Purchase order not found" }, { status: 404 });
     return NextResponse.json({ error: "Failed to update purchase order" }, { status: 500 });
   }
 }
@@ -75,7 +78,9 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
 
     await prisma.purchaseOrder.delete({ where: { id } });
     return NextResponse.json({ message: "Purchase order deleted" });
-  } catch (error) {
+  } catch (error: any) {
+    console.error("Failed to delete purchase order:", error);
+    if (error?.code === "P2025") return NextResponse.json({ error: "Purchase order not found" }, { status: 404 });
     return NextResponse.json({ error: "Failed to delete purchase order" }, { status: 500 });
   }
 }

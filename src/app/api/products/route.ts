@@ -28,6 +28,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json(paginatedResponse(products, total, { page, limit, skip }));
   } catch (error) {
+    console.error("Failed to fetch products:", error);
     return NextResponse.json({ error: "Failed to fetch products" }, { status: 500 });
   }
 }
@@ -69,6 +70,7 @@ export async function POST(req: Request) {
     });
     return NextResponse.json(product, { status: 201 });
   } catch (error) {
+    console.error("Failed to create product:", error);
     return NextResponse.json({ error: "Failed to create product" }, { status: 500 });
   }
 }

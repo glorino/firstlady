@@ -3,9 +3,9 @@ import type { NextRequest } from "next/server";
 
 const ROLE_ROUTES: Record<string, string[]> = {
   ADMIN: ["/admin", "/dashboard", "/warehouse", "/sales", "/accountant"],
-  SALES: ["/sales", "/dashboard"],
+  SALES: ["/sales", "/dashboard", "/warehouse/products"],
   WAREHOUSE: ["/warehouse", "/dashboard"],
-  ACCOUNTANT: ["/accountant", "/dashboard", "/sales/history"],
+  ACCOUNTANT: ["/accountant", "/dashboard", "/sales", "/warehouse/products", "/admin/analytics"],
 };
 
 function decodeRoleFromJwt(token: string): string | null {

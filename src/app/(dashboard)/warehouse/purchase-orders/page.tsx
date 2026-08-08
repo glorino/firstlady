@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
   Plus, Search, Package, Truck, Loader2, Eye, CheckCircle,
-  XCircle, Trash2, Edit, Calendar, ChevronDown, ChevronUp,
+  XCircle, Trash2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -126,44 +126,76 @@ export default function PurchaseOrdersPage() {
 
       if (!form.supplierId || items.length === 0) return;
 
-      await fetch("/api/purchase-orders", {
+      const res = await fetch("/api/purchase-orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...form, items }),
       });
 
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || "Failed to create purchase order");
+        return;
+      }
+
       setShowCreate(false);
       setForm({ supplierId: "", expectedDate: "", notes: "" });
       setFormItems([{ productId: "", quantity: 1, unitCost: 0 }]);
       fetchOrders();
+    } catch {
+      alert("Network error. Please try again.");
     } finally {
       setSaving(false);
     }
   };
 
   const handleReceive = async (orderId: string) => {
-    if (!confirm("Receive this order? Stock will be updated.")) return;
-    await fetch(`/api/purchase-orders/${orderId}/receive`, { method: "POST" });
-    fetchOrders();
-    setShowDetail(null);
+    try {
+      const res = await fetch(`/api/purchase-orders/${orderId}/receive`, { method: "POST" });
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || "Failed to receive order");
+        return;
+      }
+      fetchOrders();
+      setShowDetail(null);
+    } catch {
+      alert("Network error. Please try again.");
+    }
   };
 
   const handleCancel = async (orderId: string) => {
-    if (!confirm("Cancel this purchase order?")) return;
-    await fetch(`/api/purchase-orders/${orderId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: "CANCELLED" }),
-    });
-    fetchOrders();
-    setShowDetail(null);
+    try {
+      const res = await fetch(`/api/purchase-orders/${orderId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "CANCELLED" }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || "Failed to cancel order");
+        return;
+      }
+      fetchOrders();
+      setShowDetail(null);
+    } catch {
+      alert("Network error. Please try again.");
+    }
   };
 
   const handleDelete = async (orderId: string) => {
-    if (!confirm("Permanently delete this purchase order?")) return;
-    await fetch(`/api/purchase-orders/${orderId}`, { method: "DELETE" });
-    fetchOrders();
-    setShowDetail(null);
+    try {
+      const res = await fetch(`/api/purchase-orders/${orderId}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || "Failed to delete order");
+        return;
+      }
+      fetchOrders();
+      setShowDetail(null);
+    } catch {
+      alert("Network error. Please try again.");
+    }
   };
 
   const addItem = () => setFormItems([...formItems, { productId: "", quantity: 1, unitCost: 0 }]);

@@ -23,6 +23,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json(paginatedResponse(customers, total, { page, limit, skip }));
   } catch (error) {
+    console.error("Failed to fetch customers:", error);
     return NextResponse.json({ error: "Failed to fetch customers" }, { status: 500 });
   }
 }
@@ -46,6 +47,7 @@ export async function POST(req: Request) {
     });
     return NextResponse.json(customer, { status: 201 });
   } catch (error) {
+    console.error("Failed to create customer:", error);
     return NextResponse.json({ error: "Failed to create customer" }, { status: 500 });
   }
 }

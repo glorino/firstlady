@@ -14,6 +14,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     });
     return NextResponse.json(sale);
   } catch (error) {
+    console.error("Failed to fetch sale:", error);
     return NextResponse.json({ error: "Failed to fetch sale" }, { status: 500 });
   }
 }

@@ -15,7 +15,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     }
     const category = await prisma.category.update({ where: { id }, data: allowedFields });
     return NextResponse.json(category);
-  } catch (error) {
+  } catch (error: any) {
+    console.error("Failed to update category:", error);
+    if (error?.code === "P2025") return NextResponse.json({ error: "Category not found" }, { status: 404 });
     return NextResponse.json({ error: "Failed to update category" }, { status: 500 });
   }
 }
@@ -28,7 +30,9 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
     const { id } = await params;
     await prisma.category.delete({ where: { id } });
     return NextResponse.json({ message: "Category deleted" });
-  } catch (error) {
+  } catch (error: any) {
+    console.error("Failed to delete category:", error);
+    if (error?.code === "P2025") return NextResponse.json({ error: "Category not found" }, { status: 404 });
     return NextResponse.json({ error: "Failed to delete category" }, { status: 500 });
   }
 }

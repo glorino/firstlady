@@ -28,6 +28,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json(paginatedResponse(movements, total, { page, limit, skip }));
   } catch (error) {
+    console.error("Failed to fetch stock movements:", error);
     return NextResponse.json({ error: "Failed to fetch stock movements" }, { status: 500 });
   }
 }
@@ -56,23 +57,28 @@ export async function POST(req: Request) {
 
     const stockChange = type === "SALE" || type === "TRANSFER" ? -qty : qty;
 
-    // Atomic transaction — stock check and update in same transaction
+    // Atomic transaction using updateMany with gte check (prevents race conditions)
     const movement = await prisma.$transaction(async (tx) => {
-      // Lock the row and check stock
-      const product = await tx.product.findUnique({ where: { id: productId } });
-      if (!product) {
-        throw new Error("Product not found");
+      if (stockChange < 0) {
+        const result = await tx.product.updateMany({
+          where: {
+            id: productId,
+            stockQuantity: { gte: Math.abs(stockChange) },
+          },
+          data: { stockQuantity: { increment: stockChange } },
+        });
+        if (result.count === 0) {
+          const exists = await tx.product.findUnique({ where: { id: productId } });
+          if (!exists) throw new Error("Product not found");
+          throw new Error("Insufficient stock");
+        }
+      } else {
+        const result = await tx.product.updateMany({
+          where: { id: productId },
+          data: { stockQuantity: { increment: stockChange } },
+        });
+        if (result.count === 0) throw new Error("Product not found");
       }
-
-      const newStock = product.stockQuantity + stockChange;
-      if (newStock < 0) {
-        throw new Error("Insufficient stock");
-      }
-
-      await tx.product.update({
-        where: { id: productId },
-        data: { stockQuantity: newStock },
-      });
 
       const mov = await tx.stockMovement.create({
         data: {

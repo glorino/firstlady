@@ -85,7 +85,7 @@ export default function AnalyticsPage() {
         hourlySales,
       });
       setLoading(false);
-    }).catch(() => setLoading(false));
+    }).catch((e) => { console.error("Failed to fetch analytics:", e); setLoading(false); });
   }, []);
 
   if (loading) {

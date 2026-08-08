@@ -3,8 +3,8 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Search, ShoppingCart, Plus, Minus, Trash2, CreditCard, Banknote,
-  Smartphone, X, Package, ScanBarcode, Loader2, CheckCircle2
+  Search, ShoppingCart, Plus, Minus, CreditCard, Banknote,
+  Smartphone, Package, Loader2, CheckCircle2
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,11 +12,12 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { formatCurrency, cn, generateInvoiceNumber } from "@/lib/utils";
+import { formatCurrency, cn } from "@/lib/utils";
 import { CartItem, PaymentMethod } from "@/types";
 
 export default function POSPage() {
   const [products, setProducts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -26,6 +27,7 @@ export default function POSPage() {
   const [amountPaid, setAmountPaid] = useState("");
   const [processing, setProcessing] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [saleError, setSaleError] = useState("");
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -39,9 +41,11 @@ export default function POSPage() {
   useEffect(() => {
     Promise.all([
       fetch("/api/products?limit=200").then((r) => r.json()),
+      fetch("/api/categories?limit=200").then((r) => r.json()),
       fetch("/api/settings").then((r) => r.json()),
-    ]).then(([products, settings]) => {
+    ]).then(([products, categories, settings]) => {
       setProducts(products.data || products);
+      setCategories(categories.data || categories);
       if (settings.taxRate) setTaxRate(Number(settings.taxRate));
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
@@ -116,6 +120,7 @@ export default function POSPage() {
   const processSale = async () => {
     if (!amountPaid || parseFloat(amountPaid) < total) return;
     setProcessing(true);
+    setSaleError("");
 
     try {
       const res = await fetch("/api/sales", {
@@ -134,6 +139,8 @@ export default function POSPage() {
         }),
       });
 
+      const data = await res.json();
+
       if (res.ok) {
         setSuccess(true);
         timeoutRef.current = setTimeout(() => {
@@ -143,16 +150,18 @@ export default function POSPage() {
           setAmountPaid("");
           fetchProducts();
         }, 2000);
+      } else {
+        setSaleError(data.error || "Failed to process sale");
       }
     } catch (error) {
-      console.error("Failed to process sale");
+      setSaleError("Network error. Please try again.");
     } finally {
       setProcessing(false);
     }
   };
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] gap-4">
+    <div className="flex h-[calc(100vh-4rem)] gap-4 overflow-hidden">
       {/* Products Grid */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Search & Filters */}
@@ -170,7 +179,10 @@ export default function POSPage() {
               <SelectValue placeholder="Category" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
+              <SelectItem value="all">All</SelectItem>
+              {categories.map((cat: any) => (
+                <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -383,6 +395,12 @@ export default function POSPage() {
                       <span className="text-emerald-600">Change</span>
                       <span className="font-bold text-emerald-700">{formatCurrency(change)}</span>
                     </div>
+                  </div>
+                )}
+
+                {saleError && (
+                  <div className="p-3 rounded-xl bg-red-50 border border-red-100 text-sm text-red-600">
+                    {saleError}
                   </div>
                 )}
 
