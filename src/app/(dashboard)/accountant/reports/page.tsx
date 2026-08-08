@@ -288,6 +288,7 @@ export default function ReportsPage() {
       setGeneratedIds((prev) => new Set(prev).add(report.id));
     } catch (e) {
       console.error("Failed to generate report", e);
+      alert("Failed to generate report. Please try again.");
     } finally {
       setGeneratingId(null);
     }

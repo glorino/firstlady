@@ -4,7 +4,7 @@ import { requireAuth, requireRole } from "@/lib/api-auth";
 import { parsePagination, paginatedResponse } from "@/lib/pagination";
 
 export async function GET(req: Request) {
-  const authResult = await requireAuth();
+  const authResult = await requireRole("ADMIN", "WAREHOUSE", "ACCOUNTANT");
   if (authResult.error) return authResult.error;
 
   try {

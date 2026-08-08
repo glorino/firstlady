@@ -375,6 +375,7 @@ export default function POSPage() {
                         {method === "CASH" && <Banknote className="w-5 h-5" />}
                         {method === "CARD" && <CreditCard className="w-5 h-5" />}
                         {method === "MOBILE" && <Smartphone className="w-5 h-5" />}
+                        {method === "TRANSFER" && <Banknote className="w-5 h-5" />}
                         <span className="text-xs font-medium">{method}</span>
                       </button>
                     ))}

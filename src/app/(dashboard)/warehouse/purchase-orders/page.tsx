@@ -124,7 +124,10 @@ export default function PurchaseOrdersPage() {
           unitCost: fi.unitCost,
         }));
 
-      if (!form.supplierId || items.length === 0) return;
+      if (!form.supplierId || items.length === 0) {
+        alert("Please select a supplier and add at least one valid item.");
+        return;
+      }
 
       const res = await fetch("/api/purchase-orders", {
         method: "POST",
@@ -150,6 +153,7 @@ export default function PurchaseOrdersPage() {
   };
 
   const handleReceive = async (orderId: string) => {
+    if (!confirm("Receive this order? Stock will be updated and the order will be marked COMPLETED.")) return;
     try {
       const res = await fetch(`/api/purchase-orders/${orderId}/receive`, { method: "POST" });
       if (!res.ok) {
@@ -165,6 +169,7 @@ export default function PurchaseOrdersPage() {
   };
 
   const handleCancel = async (orderId: string) => {
+    if (!confirm("Cancel this purchase order? This cannot be undone.")) return;
     try {
       const res = await fetch(`/api/purchase-orders/${orderId}`, {
         method: "PUT",
@@ -184,6 +189,7 @@ export default function PurchaseOrdersPage() {
   };
 
   const handleDelete = async (orderId: string) => {
+    if (!confirm("Permanently delete this purchase order? This cannot be undone.")) return;
     try {
       const res = await fetch(`/api/purchase-orders/${orderId}`, { method: "DELETE" });
       if (!res.ok) {

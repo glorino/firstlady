@@ -46,12 +46,17 @@ export default function StockMovementsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const qty = parseInt(form.quantity);
+    if (isNaN(qty) || qty <= 0) {
+      alert("Please enter a valid positive quantity.");
+      return;
+    }
     setSaving(true);
     try {
       const res = await fetch("/api/stock", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, quantity: parseInt(form.quantity) }),
+        body: JSON.stringify({ ...form, quantity: qty }),
       });
       if (!res.ok) {
         const data = await res.json();

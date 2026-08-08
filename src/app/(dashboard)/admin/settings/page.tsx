@@ -6,13 +6,14 @@ import { Store, Bell, Shield, Save, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+import { cn } from "@/lib/utils";
 
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } };
 const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
 
-const DEFAULTS = {
+const DEFAULTS: Record<string, string> = {
   storeName: "FirstLady Store",
   storeAddress: "123 Business Street, Lagos",
   storePhone: "+234 801 234 5678",
@@ -20,13 +21,18 @@ const DEFAULTS = {
   taxRate: "7.5",
   currency: "NGN",
   lowStockThreshold: "10",
+  lowStockAlerts: "true",
+  dailySalesSummary: "true",
+  newOrderNotifications: "false",
+  expenseApprovals: "true",
+  sessionTimeout: "30",
 };
 
 export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saved, setSaved] = useState(false);
-  const [settings, setSettings] = useState(DEFAULTS);
+  const [settings, setSettings] = useState<Record<string, string>>(DEFAULTS);
 
   useEffect(() => {
     fetch("/api/settings")
@@ -44,15 +50,20 @@ export default function SettingsPage() {
     setSaving(true);
     setSaved(false);
     try {
-      await fetch("/api/settings", {
+      const res = await fetch("/api/settings", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(settings),
       });
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
-    } catch (error) {
-      console.error("Failed to save settings");
+      if (res.ok) {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 3000);
+      } else {
+        const data = await res.json();
+        alert(data.error || "Failed to save settings");
+      }
+    } catch {
+      alert("Network error. Failed to save settings.");
     } finally {
       setSaving(false);
     }
@@ -118,17 +129,29 @@ export default function SettingsPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {[
-                  { label: "Low Stock Alerts", description: "Get notified when products fall below minimum stock level", enabled: true },
-                  { label: "Daily Sales Summary", description: "Receive end-of-day sales report", enabled: true },
-                  { label: "New Order Notifications", description: "Alert for new sales orders", enabled: false },
-                  { label: "Expense Approvals", description: "Notify when expenses need approval", enabled: true },
+                  { key: "lowStockAlerts", label: "Low Stock Alerts", description: "Get notified when products fall below minimum stock level" },
+                  { key: "dailySalesSummary", label: "Daily Sales Summary", description: "Receive end-of-day sales report" },
+                  { key: "newOrderNotifications", label: "New Order Notifications", description: "Alert for new sales orders" },
+                  { key: "expenseApprovals", label: "Expense Approvals", description: "Notify when expenses need approval" },
                 ].map((n) => (
-                  <div key={n.label} className="flex items-center justify-between p-4 rounded-xl bg-gray-50">
+                  <div key={n.key} className="flex items-center justify-between p-4 rounded-xl bg-gray-50">
                     <div>
                       <p className="font-medium text-gray-900">{n.label}</p>
                       <p className="text-sm text-gray-500">{n.description}</p>
                     </div>
-                    <Badge variant={n.enabled ? "success" : "secondary"}>{n.enabled ? "Enabled" : "Disabled"}</Badge>
+                    <button
+                      type="button"
+                      onClick={() => setSettings({ ...settings, [n.key]: settings[n.key] === "true" ? "false" : "true" })}
+                      className={cn(
+                        "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+                        settings[n.key] === "true" ? "bg-blue-600" : "bg-gray-300"
+                      )}
+                    >
+                      <span className={cn(
+                        "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                        settings[n.key] === "true" ? "translate-x-6" : "translate-x-1"
+                      )} />
+                    </button>
                   </div>
                 ))}
               </CardContent>
@@ -143,14 +166,9 @@ export default function SettingsPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="p-4 rounded-xl bg-gray-50">
-                  <p className="font-medium text-gray-900">Two-Factor Authentication</p>
-                  <p className="text-sm text-gray-500 mt-1">Add an extra layer of security to your account</p>
-                  <Button variant="outline" className="mt-3" size="sm">Enable 2FA</Button>
-                </div>
-                <div className="p-4 rounded-xl bg-gray-50">
                   <p className="font-medium text-gray-900">Session Timeout</p>
                   <p className="text-sm text-gray-500 mt-1">Automatically log out after inactivity</p>
-                  <Input type="number" value="30" className="mt-2 max-w-[200px]" label="Minutes" />
+                  <Input type="number" value={settings.sessionTimeout || "30"} onChange={(e) => setSettings({ ...settings, sessionTimeout: e.target.value })} className="mt-2 max-w-[200px]" label="Minutes" />
                 </div>
               </CardContent>
             </Card>
