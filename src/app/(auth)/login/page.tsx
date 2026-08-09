@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, Lock, Eye, EyeOff, Store, Loader2, Shield, Zap, BarChart3 } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, Loader2, Shield, Zap, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -105,9 +105,7 @@ export default function LoginPage() {
             transition={{ duration: 0.7 }}
           >
             <div className="flex items-center gap-3 mb-8">
-              <div className="w-12 h-12 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center border border-white/20">
-                <Store className="w-6 h-6 text-white" />
-              </div>
+              <img src="/logo.svg" alt="FirstLady" className="w-12 h-12 rounded-2xl shadow-lg shadow-amber-500/25" />
               <div>
                 <h1 className="text-2xl font-bold text-white">FirstLady</h1>
                 <p className="text-xs text-blue-100">POS & Stock Management</p>
@@ -154,9 +152,7 @@ export default function LoginPage() {
         >
           {/* Mobile Logo */}
           <div className="lg:hidden text-center mb-8">
-            <div className="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-xl shadow-blue-500/25 mb-3">
-              <Store className="w-7 h-7 text-white" />
-            </div>
+            <img src="/logo.svg" alt="FirstLady" className="w-14 h-14 mx-auto rounded-2xl shadow-xl shadow-amber-500/25 mb-3" />
             <h1 className="text-2xl font-bold text-gray-900">FirstLady</h1>
             <p className="text-gray-500 text-sm mt-0.5">POS & Stock Management</p>
           </div>

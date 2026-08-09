@@ -8,7 +8,7 @@ import {
   LayoutDashboard, ShoppingCart, Package, Users, Truck, BarChart3,
   Settings, TrendingUp, ClipboardList, Tags,
   UserCircle, Receipt, PieChart,
-  Store, X, Menu, FileText
+  X, Menu, FileText
 } from "lucide-react";
 import { cn, getInitials } from "@/lib/utils";
 import { useSession } from "next-auth/react";
@@ -124,9 +124,7 @@ function SidebarContent({ role, onClose }: { role: Role; onClose: () => void }) 
       {/* Logo */}
       <div className="flex items-center justify-between h-16 px-6 border-b border-gray-100">
         <Link href="/dashboard" className="flex items-center gap-3" onClick={onClose}>
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/25">
-            <Store className="w-5 h-5 text-white" />
-          </div>
+          <img src="/logo.svg" alt="FirstLady" className="w-10 h-10 rounded-xl shadow-lg shadow-amber-500/25" />
           <div>
             <h1 className="text-lg font-bold text-gray-900">FirstLady</h1>
             <p className="text-[10px] text-gray-400 -mt-0.5">POS System</p>
