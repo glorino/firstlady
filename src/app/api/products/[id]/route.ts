@@ -3,7 +3,7 @@ import prisma from "@/lib/prisma";
 import { requireRole } from "@/lib/api-auth";
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const authResult = await requireRole("ADMIN", "WAREHOUSE");
+  const authResult = await requireRole("ADMIN", "WAREHOUSE", "SALES");
   if (authResult.error) return authResult.error;
 
   try {
