@@ -34,7 +34,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const authResult = await requireRole("ADMIN", "WAREHOUSE", "SALES");
+  const authResult = await requireRole("ADMIN", "WAREHOUSE");
   if (authResult.error) return authResult.error;
 
   try {

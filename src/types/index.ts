@@ -39,7 +39,7 @@ export const ROLE_PERMISSIONS: Record<Role, string[]> = {
     "dashboard:view",
     "sales:view", "sales:create",
     "customers:view", "customers:create", "customers:edit",
-    "products:view", "products:create", "products:edit",
+    "products:view",
     "categories:view",
   ],
   WAREHOUSE: [
