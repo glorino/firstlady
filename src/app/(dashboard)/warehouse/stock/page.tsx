@@ -31,7 +31,7 @@ export default function StockMovementsPage() {
       const res = await fetch("/api/stock?limit=200");
       const json = await res.json();
       setMovements(json.data || json);
-    } finally { setLoading(false); }
+    } catch { console.error("Failed to fetch stock movements"); } finally { setLoading(false); }
   };
 
   const fetchProducts = async () => {

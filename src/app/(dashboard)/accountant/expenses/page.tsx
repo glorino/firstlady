@@ -32,7 +32,7 @@ export default function ExpensesPage() {
   useEffect(() => { fetchExpenses(); }, []);
 
   const fetchExpenses = async () => {
-    try { const res = await fetch("/api/expenses?limit=200"); const json = await res.json(); setExpenses(json.data || json); } finally { setLoading(false); }
+    try { const res = await fetch("/api/expenses?limit=200"); const json = await res.json(); setExpenses(json.data || json); } catch { console.error("Failed to fetch expenses"); } finally { setLoading(false); }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -51,6 +51,7 @@ export default function ExpensesPage() {
   };
 
   const handleStatusChange = async (id: string, status: string) => {
+    if (!confirm(`${status === "APPROVED" ? "Approve" : "Reject"} this expense?`)) return;
     try {
       const res = await fetch(`/api/expenses/${id}`, {
         method: "PUT",

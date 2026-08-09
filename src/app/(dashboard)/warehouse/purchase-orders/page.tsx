@@ -89,7 +89,7 @@ export default function PurchaseOrdersPage() {
       const res = await fetch(`/api/purchase-orders?${params}`);
       const json = await res.json();
       setOrders(json.data || json);
-    } finally {
+    } catch { console.error("Failed to fetch purchase orders"); } finally {
       setLoading(false);
     }
   }, [statusFilter]);

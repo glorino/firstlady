@@ -32,16 +32,6 @@ export function formatDateTime(date: Date | string): string {
   }).format(new Date(date));
 }
 
-export function generateInvoiceNumber(): string {
-  const date = new Date();
-  const prefix = "INV";
-  const timestamp = date.getFullYear().toString().slice(-2) +
-    (date.getMonth() + 1).toString().padStart(2, "0") +
-    date.getDate().toString().padStart(2, "0");
-  const random = Math.floor(Math.random() * 10000).toString().padStart(4, "0");
-  return `${prefix}-${timestamp}-${random}`;
-}
-
 export function getGreeting(): string {
   const hour = new Date().getHours();
   if (hour < 12) return "Good morning";

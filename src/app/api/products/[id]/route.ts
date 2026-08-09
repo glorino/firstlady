@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { requireAuth, requireRole } from "@/lib/api-auth";
+import { requireRole } from "@/lib/api-auth";
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const authResult = await requireRole("ADMIN", "WAREHOUSE");

@@ -24,10 +24,17 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
 
     const received = await prisma.$transaction(async (tx) => {
       for (const item of order.items) {
-        await tx.product.update({
-          where: { id: item.productId },
+        const result = await tx.product.updateMany({
+          where: {
+            id: item.productId,
+            stockQuantity: { gte: 0 },
+          },
           data: { stockQuantity: { increment: item.quantity } },
         });
+
+        if (result.count === 0) {
+          throw new Error(`Product not found: ${item.productId}`);
+        }
 
         await tx.stockMovement.create({
           data: {

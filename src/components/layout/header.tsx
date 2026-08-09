@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, Bell, Search, LogOut, User, ChevronDown } from "lucide-react";
+import { Menu, Bell, Search, LogOut, ChevronDown } from "lucide-react";
 import { getGreeting, getInitials, cn } from "@/lib/utils";
 import { Role } from "@/generated/prisma";
 import { Button } from "@/components/ui/button";

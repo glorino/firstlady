@@ -30,7 +30,7 @@ export default function CustomersPage() {
       const res = await fetch("/api/customers?limit=200");
       const json = await res.json();
       setCustomers(json.data || json);
-    } finally { setLoading(false); }
+    } catch { console.error("Failed to fetch customers"); } finally { setLoading(false); }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

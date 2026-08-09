@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { requireAuth, requireRole } from "@/lib/api-auth";
+import { requireRole } from "@/lib/api-auth";
 import { parsePagination, paginatedResponse } from "@/lib/pagination";
 
 export async function GET(req: Request) {
