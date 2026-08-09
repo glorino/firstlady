@@ -67,7 +67,7 @@ export default function CustomersPage() {
     }
   };
 
-  const filtered = customers.filter(c => c.name.toLowerCase().includes(search.toLowerCase()) || c.email?.toLowerCase().includes(search.toLowerCase()));
+  const filtered = customers.filter(c => c.name.toLowerCase().includes(search.toLowerCase()) || c.email?.toLowerCase().includes(search.toLowerCase()) || c.address?.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
@@ -88,12 +88,13 @@ export default function CustomersPage() {
               <div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-blue-600" /></div>
             ) : (
               <Table>
-                <TableHeader><TableRow><TableHead>Customer</TableHead><TableHead>Phone</TableHead><TableHead>Balance</TableHead><TableHead>Joined</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
+                <TableHeader><TableRow><TableHead>Customer</TableHead><TableHead>Phone</TableHead><TableHead>Address</TableHead><TableHead>Balance</TableHead><TableHead>Joined</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
                 <TableBody>
                   {filtered.map((c) => (
                     <TableRow key={c.id}>
                       <TableCell><div className="flex items-center gap-3"><div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center text-white text-sm font-bold">{c.name.charAt(0)}</div><div><p className="font-medium text-gray-900">{c.name}</p><p className="text-sm text-gray-500">{c.email || "N/A"}</p></div></div></TableCell>
                       <TableCell>{c.phone || "N/A"}</TableCell>
+                      <TableCell className="text-sm text-gray-500">{c.address || "N/A"}</TableCell>
                       <TableCell className="font-semibold">{formatCurrency(Number(c.balance))}</TableCell>
                       <TableCell className="text-sm text-gray-500">{formatDate(c.createdAt)}</TableCell>
                       <TableCell className="text-right"><div className="flex items-center justify-end gap-2"><Button variant="ghost" size="icon" onClick={() => { setEditing(c); setForm({ name: c.name, email: c.email || "", phone: c.phone || "", address: c.address || "" }); setShowDialog(true); }}><Edit className="w-4 h-4" /></Button><Button variant="ghost" size="icon" onClick={() => handleDelete(c.id)}><Trash2 className="w-4 h-4 text-red-500" /></Button></div></TableCell>
