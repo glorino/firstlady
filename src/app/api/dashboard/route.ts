@@ -237,10 +237,15 @@ export async function GET(request: Request) {
     }
 
     if (lowStockAlertItems.length > 0) {
+      const productList = lowStockAlertItems
+        .slice(0, 3)
+        .map((p) => `${p.name} (${p.stockQuantity} left)`)
+        .join(", ");
+      const moreText = lowStockAlertItems.length > 3 ? ` +${lowStockAlertItems.length - 3} more` : "";
       insights.push({
         id: 2, type: "warning",
         title: "Stock Alert",
-        insight: `${lowStockAlertItems.length} product(s) are running low on stock.`,
+        insight: `${lowStockAlertItems.length} product(s) running low: ${productList}${moreText}.`,
         action: "Reorder recommended soon.",
       });
     }
