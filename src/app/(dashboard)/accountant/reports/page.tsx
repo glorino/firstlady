@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatCurrency, formatCurrencyPdf, formatDate } from "@/lib/utils";
 
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } } as const;
 const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
@@ -76,7 +76,7 @@ const REPORTS: ReportDef[] = [
           s.invoiceNumber,
           s.customer?.name || "Walk-in",
           String(s.items?.reduce((sum: number, i: any) => sum + i.quantity, 0) || 0),
-          formatCurrency(Number(s.totalAmount)),
+          formatCurrencyPdf(Number(s.totalAmount)),
           s.paymentMethod,
           s.status,
           formatDate(s.createdAt),
@@ -101,8 +101,8 @@ const REPORTS: ReportDef[] = [
           p.sku,
           String(p.stockQuantity),
           String(p.minStockLevel),
-          formatCurrency(Number(p.sellingPrice)),
-          formatCurrency(Number(p.sellingPrice) * p.stockQuantity),
+          formatCurrencyPdf(Number(p.sellingPrice)),
+          formatCurrencyPdf(Number(p.sellingPrice) * p.stockQuantity),
           p.stockQuantity <= p.minStockLevel ? "Low" : "Good",
         ]),
       };
@@ -142,11 +142,11 @@ const REPORTS: ReportDef[] = [
       for (const [cat, v] of Object.entries(categoryMap)) {
         const profit = v.revenue - v.cost;
         const margin = v.revenue > 0 ? ((profit / v.revenue) * 100).toFixed(1) + "%" : "0%";
-        rows.push([cat, formatCurrency(v.revenue), formatCurrency(v.cost), formatCurrency(0), formatCurrency(profit), margin]);
+        rows.push([cat, formatCurrencyPdf(v.revenue), formatCurrencyPdf(v.cost), formatCurrencyPdf(0), formatCurrencyPdf(profit), margin]);
         totRev += v.revenue;
         totCost += v.cost;
       }
-      rows.push(["TOTAL", formatCurrency(totRev), formatCurrency(totCost), formatCurrency(totalExpenses), formatCurrency(totRev - totCost - totalExpenses), totRev > 0 ? (((totRev - totCost - totalExpenses) / totRev) * 100).toFixed(1) + "%" : "0%"]);
+      rows.push(["TOTAL", formatCurrencyPdf(totRev), formatCurrencyPdf(totCost), formatCurrencyPdf(totalExpenses), formatCurrencyPdf(totRev - totCost - totalExpenses), totRev > 0 ? (((totRev - totCost - totalExpenses) / totRev) * 100).toFixed(1) + "%" : "0%"]);
 
       return {
         columns: ["Category", "Revenue", "Cost", "Expenses", "Profit", "Margin"],
@@ -171,7 +171,7 @@ const REPORTS: ReportDef[] = [
           c.phone || "-",
           c.email || "-",
           String(c._count?.sales || 0),
-          formatCurrency(Number(c.balance || 0)),
+          formatCurrencyPdf(Number(c.balance || 0)),
           Number(c.balance) > 0 ? "Outstanding" : "Active",
         ]),
       };
@@ -192,7 +192,7 @@ const REPORTS: ReportDef[] = [
         columns: ["Category", "Amount", "Date", "Description"],
         data: filtered.map((e: any) => [
           e.category,
-          formatCurrency(Number(e.amount)),
+          formatCurrencyPdf(Number(e.amount)),
           formatDate(e.date || e.createdAt),
           e.description || "-",
         ]),

@@ -14,6 +14,10 @@ export function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
+export function formatCurrencyPdf(amount: number): string {
+  return "N" + Number(amount).toLocaleString("en-NG", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+}
+
 export function formatDate(date: Date | string): string {
   return new Intl.DateTimeFormat("en-US", {
     year: "numeric",

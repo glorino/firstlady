@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { formatCurrency, formatDateTime, formatDate } from "@/lib/utils";
+import { formatCurrency, formatCurrencyPdf, formatDateTime, formatDate } from "@/lib/utils";
 
 const container = {
   hidden: { opacity: 0 },
@@ -69,7 +69,7 @@ function exportPdf(sales: any[]) {
     s.invoiceNumber,
     s.customer?.name || "Walk-in",
     String(s.items?.reduce((sum: number, i: any) => sum + i.quantity, 0) || 0),
-    formatCurrency(Number(s.totalAmount)),
+    formatCurrencyPdf(Number(s.totalAmount)),
     s.paymentMethod,
     s.status,
     formatDateTime(s.createdAt),
