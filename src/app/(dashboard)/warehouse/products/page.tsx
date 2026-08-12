@@ -332,8 +332,8 @@ export default function ProductsPage() {
               </Select>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <Input label="Cost Price (₦)" type="number" step="0.01" value={formData.costPrice} onChange={(e) => setFormData({ ...formData, costPrice: e.target.value })} required />
-              <Input label="Selling Price (₦)" type="number" step="0.01" value={formData.sellingPrice} onChange={(e) => setFormData({ ...formData, sellingPrice: e.target.value })} required />
+              <Input label="Cost Price (N)" type="number" step="0.01" value={formData.costPrice} onChange={(e) => setFormData({ ...formData, costPrice: e.target.value })} required />
+              <Input label="Selling Price (N)" type="number" step="0.01" value={formData.sellingPrice} onChange={(e) => setFormData({ ...formData, sellingPrice: e.target.value })} required />
             </div>
             <div className="grid grid-cols-3 gap-4">
               <Input label="Initial Stock" type="number" value={formData.stockQuantity} onChange={(e) => setFormData({ ...formData, stockQuantity: e.target.value })} />

@@ -14,8 +14,14 @@ export function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
-export function formatCurrencyPdf(amount: number): string {
+export function formatCurrencyN(amount: number): string {
   return "N" + Number(amount).toLocaleString("en-NG", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+}
+
+export function formatCurrencyShort(amount: number): string {
+  if (amount >= 1000000) return "N" + (amount / 1000000).toFixed(1) + "M";
+  if (amount >= 1000) return "N" + (amount / 1000).toFixed(0) + "k";
+  return "N" + amount.toFixed(0);
 }
 
 export function formatDate(date: Date | string): string {

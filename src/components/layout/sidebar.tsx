@@ -77,7 +77,7 @@ const ROLE_NAV: Record<Role, NavGroup[]> = {
         { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
         { label: "Products", href: "/warehouse/products", icon: Package },
         { label: "Stock Movements", href: "/warehouse/stock", icon: TrendingUp },
-        { label: "Categories", href: "/warehouse/products", icon: Tags },
+        { label: "Categories", href: "/warehouse/products#categories", icon: Tags },
       ],
     },
     {

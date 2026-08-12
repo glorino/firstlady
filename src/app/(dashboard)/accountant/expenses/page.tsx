@@ -155,7 +155,7 @@ export default function ExpensesPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input label="Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
             <Input label="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-            <Input label="Amount (₦)" type="number" step="0.01" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} required />
+            <Input label="Amount (N)" type="number" step="0.01" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} required />
             <div className="space-y-1.5"><label className="text-sm font-medium text-gray-700">Category</label><Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{EXPENSE_CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
             <Input label="Date" type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
             <DialogFooter><Button type="button" variant="outline" onClick={() => setShowDialog(false)}>Cancel</Button><Button type="submit" disabled={saving}>{saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}Add Expense</Button></DialogFooter>

@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { TrendingUp, TrendingDown, DollarSign, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { formatCurrency, cn } from "@/lib/utils";
+import { formatCurrency, formatCurrencyShort, cn } from "@/lib/utils";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } } as const;
@@ -126,7 +126,7 @@ export default function ProfitLossPage() {
                     <AreaChart data={monthlyData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                       <XAxis dataKey="month" stroke="#9ca3af" fontSize={12} />
-                      <YAxis stroke="#9ca3af" fontSize={12} tickFormatter={(v) => `₦${(v / 1000).toFixed(0)}k`} />
+                      <YAxis stroke="#9ca3af" fontSize={12} tickFormatter={(v) => `N${(v / 1000).toFixed(0)}k`} />
                       <Tooltip formatter={(value: any) => formatCurrency(Number(value))} />
                       <Area type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={2} fill="#3b82f6" fillOpacity={0.1} />
                       <Area type="monotone" dataKey="profit" stroke="#10b981" strokeWidth={2} fill="#10b981" fillOpacity={0.1} />
@@ -146,7 +146,7 @@ export default function ProfitLossPage() {
                     <BarChart data={monthlyData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                       <XAxis dataKey="month" stroke="#9ca3af" fontSize={12} />
-                      <YAxis stroke="#9ca3af" fontSize={12} tickFormatter={(v) => `₦${(v / 1000).toFixed(0)}k`} />
+                      <YAxis stroke="#9ca3af" fontSize={12} tickFormatter={(v) => `N${(v / 1000).toFixed(0)}k`} />
                       <Tooltip formatter={(value: any) => formatCurrency(Number(value))} />
                       <Bar dataKey="cogs" fill="#f59e0b" radius={[4, 4, 0, 0]} />
                       <Bar dataKey="expenses" fill="#ef4444" radius={[4, 4, 0, 0]} />

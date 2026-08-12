@@ -58,7 +58,6 @@ model User {
   sales         Sale[]
   stockMovements StockMovement[]
   expenses      Expense[]
-  auditLogs     AuditLog[]
 
   @@map("users")
 }
@@ -131,6 +130,7 @@ model Product {
   purchaseOrderItems PurchaseOrderItem[]
 
   @@index([categoryId])
+  @@index([supplierId])
   @@index([isActive])
   @@index([stockQuantity])
   @@map("products")
@@ -212,6 +212,8 @@ model PurchaseOrder {
   supplier      Supplier            @relation(fields: [supplierId], references: [id], onDelete: Restrict)
   items         PurchaseOrderItem[]
 
+  @@index([supplierId])
+  @@index([status])
   @@map("purchase_orders")
 }
 
@@ -270,24 +272,6 @@ model Expense {
   @@index([status])
   @@index([date])
   @@map("expenses")
-}
-
-model AuditLog {
-  id        String   @id @default(cuid())
-  userId    String
-  action    String
-  entity    String
-  entityId  String?
-  oldData   Json?
-  newData   Json?
-  ipAddress String?
-  createdAt DateTime @default(now())
-
-  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
-
-  @@index([userId])
-  @@index([createdAt])
-  @@map("audit_logs")
 }
 
 model Settings {

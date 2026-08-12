@@ -22,7 +22,6 @@ export default function POSPage() {
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [showPayment, setShowPayment] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("CASH");
   const [amountPaid, setAmountPaid] = useState("");
@@ -40,7 +39,6 @@ export default function POSPage() {
   const [taxRate, setTaxRate] = useState(7.5);
 
   useEffect(() => {
-    setLoadError("");
     Promise.all([
       fetch("/api/products?limit=200").then((r) => r.json()),
       fetch("/api/categories?limit=200").then((r) => r.json()),
@@ -49,7 +47,7 @@ export default function POSPage() {
       setProducts(products.data || products);
       setCategories(categories.data || categories);
       if (settings.taxRate) setTaxRate(Number(settings.taxRate));
-    }).catch(() => setLoadError("Failed to load products. Please refresh the page.")).finally(() => setLoading(false));
+    }).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
   const fetchProducts = async () => {
@@ -220,13 +218,7 @@ export default function POSPage() {
                           alt={product.name}
                           className="w-full h-full object-contain p-1"
                         />
-          ) : loadError ? (
-            <div className="flex flex-col items-center justify-center py-20 text-red-500">
-              <Package className="w-12 h-12 mb-3 opacity-50" />
-              <p className="text-sm font-medium">{loadError}</p>
-              <button onClick={() => window.location.reload()} className="mt-2 text-xs text-blue-600 hover:underline">Retry</button>
-            </div>
-          ) : (
+                      ) : (
                         <Package className="w-10 h-10 text-gray-300" />
                       )}
                     </div>
