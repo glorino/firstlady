@@ -198,6 +198,7 @@ export default function SalesHistoryPage() {
                 <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
               </div>
             ) : (
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -238,6 +239,7 @@ export default function SalesHistoryPage() {
                   )}
                 </TableBody>
               </Table>
+              </div>
             )}
           </CardContent>
         </Card>

@@ -73,6 +73,7 @@ export default function SuppliersPage() {
           <CardHeader><Input placeholder="Search suppliers..." value={search} onChange={(e) => setSearch(e.target.value)} icon={<Search className="w-4 h-4" />} /></CardHeader>
           <CardContent>
             {loading ? <div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-blue-600" /></div> : (
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader><TableRow><TableHead>Supplier</TableHead><TableHead>Contact</TableHead><TableHead>Address</TableHead><TableHead>Added</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
                 <TableBody>
@@ -87,6 +88,7 @@ export default function SuppliersPage() {
                   ))}
                 </TableBody>
               </Table>
+              </div>
             )}
           </CardContent>
         </Card>

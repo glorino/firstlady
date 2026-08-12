@@ -108,6 +108,7 @@ export default function ExpensesPage() {
           <CardHeader><Input placeholder="Search expenses..." value={search} onChange={(e) => setSearch(e.target.value)} icon={<Search className="w-4 h-4" />} /></CardHeader>
           <CardContent>
             {loading ? <div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-blue-600" /></div> : (
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader><TableRow><TableHead>Title</TableHead><TableHead>Category</TableHead><TableHead>Amount</TableHead><TableHead>Status</TableHead><TableHead>Date</TableHead><TableHead>Actions</TableHead></TableRow></TableHeader>
                 <TableBody>
@@ -144,6 +145,7 @@ export default function ExpensesPage() {
                   })}
                 </TableBody>
               </Table>
+              </div>
             )}
           </CardContent>
         </Card>

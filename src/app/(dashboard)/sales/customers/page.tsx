@@ -87,6 +87,7 @@ export default function CustomersPage() {
             {loading ? (
               <div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-blue-600" /></div>
             ) : (
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader><TableRow><TableHead>Customer</TableHead><TableHead>Phone</TableHead><TableHead>Address</TableHead><TableHead>Balance</TableHead><TableHead>Joined</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
                 <TableBody>
@@ -102,6 +103,7 @@ export default function CustomersPage() {
                   ))}
                 </TableBody>
               </Table>
+              </div>
             )}
           </CardContent>
         </Card>

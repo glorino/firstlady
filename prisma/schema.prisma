@@ -28,6 +28,13 @@ enum OrderStatus {
   REFUNDED
 }
 
+enum ReturnStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
+}
+
 enum StockMovementType {
   PURCHASE
   SALE
@@ -58,6 +65,7 @@ model User {
   sales         Sale[]
   stockMovements StockMovement[]
   expenses      Expense[]
+  returns       Return[]
 
   @@map("users")
 }
@@ -128,6 +136,7 @@ model Product {
   saleItems     SaleItem[]
   stockMovements StockMovement[]
   purchaseOrderItems PurchaseOrderItem[]
+  returnItems   ReturnItem[]
 
   @@index([categoryId])
   @@index([supplierId])
@@ -159,6 +168,7 @@ model Sale {
   user            User          @relation(fields: [userId], references: [id], onDelete: Restrict)
   items           SaleItem[]
   payments        Payment[]
+  returns         Return[]
 
   @@index([createdAt])
   @@index([customerId])
@@ -196,6 +206,45 @@ model Payment {
 
   @@index([saleId])
   @@map("payments")
+}
+
+model Return {
+  id            String         @id @default(cuid())
+  returnNumber  String         @unique
+  saleId        String
+  userId        String
+  reason        String
+  totalAmount   Decimal        @db.Decimal(10, 2)
+  status        ReturnStatus   @default(PENDING)
+  notes         String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  sale          Sale           @relation(fields: [saleId], references: [id], onDelete: Restrict)
+  user          User           @relation(fields: [userId], references: [id], onDelete: Restrict)
+  items         ReturnItem[]
+
+  @@index([saleId])
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("returns")
+}
+
+model ReturnItem {
+  id          String  @id @default(cuid())
+  returnId    String
+  productId   String
+  quantity    Int
+  unitPrice   Decimal @db.Decimal(10, 2)
+  total       Decimal @db.Decimal(10, 2)
+
+  return      Return  @relation(fields: [returnId], references: [id], onDelete: Cascade)
+  product     Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([returnId])
+  @@index([productId])
+  @@map("return_items")
 }
 
 model PurchaseOrder {

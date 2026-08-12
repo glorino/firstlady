@@ -283,6 +283,7 @@ export default function PurchaseOrdersPage() {
                 <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
               </div>
             ) : (
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -346,6 +347,7 @@ export default function PurchaseOrdersPage() {
                   ))}
                 </TableBody>
               </Table>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -501,6 +503,7 @@ export default function PurchaseOrdersPage() {
 
                 <div>
                   <p className="text-sm font-medium text-gray-700 mb-2">Items</p>
+                  <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -521,6 +524,7 @@ export default function PurchaseOrdersPage() {
                       ))}
                     </TableBody>
                   </Table>
+                  </div>
                 </div>
 
                 {showDetail.status === "PENDING" && (

@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, ShoppingCart, Package, Users, Truck, BarChart3,
   Settings, TrendingUp, ClipboardList, Tags,
-  UserCircle, Receipt, PieChart,
+  UserCircle, Receipt, PieChart, RotateCcw,
   X, Menu, FileText
 } from "lucide-react";
 import { cn, getInitials } from "@/lib/utils";
@@ -48,6 +48,7 @@ const ROLE_NAV: Record<Role, NavGroup[]> = {
         { label: "Products", href: "/warehouse/products", icon: Package },
         { label: "Purchase Orders", href: "/warehouse/purchase-orders", icon: ClipboardList },
         { label: "Sales History", href: "/sales/history", icon: ClipboardList },
+        { label: "Returns", href: "/sales/returns", icon: RotateCcw },
         { label: "Expenses", href: "/accountant/expenses", icon: Receipt },
         { label: "Reports", href: "/accountant/reports", icon: FileText },
       ],
@@ -60,6 +61,7 @@ const ROLE_NAV: Record<Role, NavGroup[]> = {
         { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
         { label: "Point of Sale", href: "/sales/pos", icon: ShoppingCart },
         { label: "Sales History", href: "/sales/history", icon: ClipboardList },
+        { label: "Returns", href: "/sales/returns", icon: RotateCcw },
         { label: "Customers", href: "/sales/customers", icon: UserCircle },
       ],
     },

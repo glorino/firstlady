@@ -94,6 +94,7 @@ export default function StockMovementsPage() {
             {loading ? (
               <div className="flex items-center justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-blue-600" /></div>
             ) : (
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader><TableRow><TableHead>Type</TableHead><TableHead>Product</TableHead><TableHead>Quantity</TableHead><TableHead>Reference</TableHead><TableHead>Notes</TableHead><TableHead>Date</TableHead></TableRow></TableHeader>
                 <TableBody>
@@ -112,6 +113,7 @@ export default function StockMovementsPage() {
                   })}
                 </TableBody>
               </Table>
+              </div>
             )}
           </CardContent>
         </Card>
