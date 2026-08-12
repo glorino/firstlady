@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, ShoppingCart, Package, Users, Truck, BarChart3,
-  Settings, TrendingUp, ClipboardList, Tags,
+  Settings, TrendingUp, ClipboardList, Tags, Tag, DollarSign,
   UserCircle, Receipt, PieChart, RotateCcw,
   X, Menu, FileText
 } from "lucide-react";
@@ -40,6 +40,7 @@ const ROLE_NAV: Record<Role, NavGroup[]> = {
       items: [
         { label: "Users", href: "/admin/users", icon: Users },
         { label: "Settings", href: "/admin/settings", icon: Settings },
+        { label: "Discounts", href: "/admin/discounts", icon: Tag },
       ],
     },
     {
@@ -64,6 +65,7 @@ const ROLE_NAV: Record<Role, NavGroup[]> = {
       items: [
         { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
         { label: "Point of Sale", href: "/sales/pos", icon: ShoppingCart },
+        { label: "Cash Register", href: "/sales/cash-register", icon: DollarSign },
         { label: "Sales History", href: "/sales/history", icon: ClipboardList },
         { label: "Returns", href: "/sales/returns", icon: RotateCcw },
         { label: "Customers", href: "/sales/customers", icon: UserCircle },

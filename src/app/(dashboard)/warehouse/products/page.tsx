@@ -36,6 +36,8 @@ interface Product {
   unit: string;
   isActive: boolean;
   image?: string | null;
+  batchNumber?: string | null;
+  expiryDate?: string | null;
   category: { id: string; name: string };
   supplier?: { id: string; name: string };
 }
@@ -62,6 +64,8 @@ export default function ProductsPage() {
     categoryId: "",
     supplierId: "",
     image: "",
+    batchNumber: "",
+    expiryDate: "",
   });
 
   useEffect(() => {
@@ -110,6 +114,7 @@ export default function ProductsPage() {
         stockQuantity: parseInt(formData.stockQuantity || "0"),
         minStockLevel: parseInt(formData.minStockLevel),
         maxStockLevel: parseInt(formData.maxStockLevel),
+        expiryDate: formData.expiryDate || null,
       };
 
       const res = await fetch(url, {
@@ -154,6 +159,7 @@ export default function ProductsPage() {
       name: "", sku: "", barcode: "", description: "", costPrice: "",
       sellingPrice: "", stockQuantity: "", minStockLevel: "5",
       maxStockLevel: "1000", unit: "pcs", categoryId: "", supplierId: "", image: "",
+      batchNumber: "", expiryDate: "",
     });
   };
 
@@ -282,6 +288,8 @@ export default function ProductsPage() {
                                   categoryId: product.category?.id || "",
                                   supplierId: product.supplier?.id || "",
                                   image: product.image || "",
+                                  batchNumber: product.batchNumber || "",
+                                  expiryDate: product.expiryDate ? new Date(product.expiryDate).toISOString().split("T")[0] : "",
                                 });
                                 setShowDialog(true);
                               }}
@@ -355,6 +363,10 @@ export default function ProductsPage() {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <Input label="Batch Number" value={formData.batchNumber} onChange={(e) => setFormData({ ...formData, batchNumber: e.target.value })} placeholder="Optional" />
+              <Input label="Expiry Date" type="date" value={formData.expiryDate} onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })} />
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowDialog(false)}>Cancel</Button>

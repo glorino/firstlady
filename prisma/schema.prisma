@@ -35,6 +35,16 @@ enum ReturnStatus {
   COMPLETED
 }
 
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+enum CashRegisterStatus {
+  OPEN
+  CLOSED
+}
+
 enum StockMovementType {
   PURCHASE
   SALE
@@ -66,6 +76,7 @@ model User {
   stockMovements StockMovement[]
   expenses      Expense[]
   returns       Return[]
+  cashRegisters CashRegister[]
 
   @@map("users")
 }
@@ -126,6 +137,8 @@ model Product {
   unit          String   @default("pcs")
   image         String?
   isActive      Boolean  @default(true)
+  batchNumber   String?
+  expiryDate    DateTime?
   categoryId    String
   supplierId    String?
   createdAt     DateTime @default(now())
@@ -159,6 +172,7 @@ model Sale {
   paymentMethod   PaymentMethod
   amountPaid      Decimal       @db.Decimal(10, 2)
   changeGiven     Decimal       @db.Decimal(10, 2) @default(0)
+  discountId      String?
   status          OrderStatus   @default(COMPLETED)
   notes           String?
   createdAt       DateTime      @default(now())
@@ -166,6 +180,7 @@ model Sale {
 
   customer        Customer?     @relation(fields: [customerId], references: [id], onDelete: SetNull)
   user            User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+  discount        Discount?     @relation(fields: [discountId], references: [id], onDelete: SetNull)
   items           SaleItem[]
   payments        Payment[]
   returns         Return[]
@@ -173,6 +188,7 @@ model Sale {
   @@index([createdAt])
   @@index([customerId])
   @@index([userId])
+  @@index([discountId])
   @@index([status])
   @@map("sales")
 }
@@ -331,4 +347,46 @@ model Settings {
   updatedAt   DateTime @updatedAt
 
   @@map("settings")
+}
+
+model Discount {
+  id            String   @id @default(cuid())
+  code          String   @unique
+  description   String?
+  type          DiscountType
+  value         Decimal  @db.Decimal(10, 2)
+  minPurchase   Decimal? @db.Decimal(10, 2)
+  maxUses       Int?
+  usedCount     Int      @default(0)
+  startDate     DateTime?
+  endDate       DateTime?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  sales         Sale[]
+
+  @@index([code])
+  @@index([isActive])
+  @@map("discounts")
+}
+
+model CashRegister {
+  id            String             @id @default(cuid())
+  userId        String
+  openingBalance Decimal           @db.Decimal(10, 2)
+  closingBalance Decimal?          @db.Decimal(10, 2)
+  totalSales    Decimal            @default(0) @db.Decimal(10, 2)
+  totalReturns  Decimal            @default(0) @db.Decimal(10, 2)
+  totalExpenses Decimal            @default(0) @db.Decimal(10, 2)
+  status        CashRegisterStatus @default(OPEN)
+  openedAt      DateTime           @default(now())
+  closedAt      DateTime?
+
+  user          User               @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([userId])
+  @@index([status])
+  @@index([openedAt])
+  @@map("cash_registers")
 }
