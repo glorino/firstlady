@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "FirstLady POS - Stock Management System",
+  title: "POS & Stock Management System",
   description: "Comprehensive Point of Sale and Stock Management System",
   icons: {
     icon: [

@@ -231,7 +231,7 @@ export async function GET(request: Request) {
       insights.push({
         id: 1, type: "positive",
         title: "Revenue Trending",
-        insight: `${filterLabel.charAt(0).toUpperCase() + filterLabel.slice(1)} revenue: ₦${filteredRevenue.toLocaleString()}. Net profit: ₦${filteredNetProfit.toLocaleString()}.`,
+        insight: `${filterLabel.charAt(0).toUpperCase() + filterLabel.slice(1)} revenue: N${filteredRevenue.toLocaleString()}. Net profit: N${filteredNetProfit.toLocaleString()}.`,
         action: "Keep up the momentum!",
       });
     }

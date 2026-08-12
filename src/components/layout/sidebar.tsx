@@ -75,6 +75,8 @@ const ROLE_NAV: Record<Role, NavGroup[]> = {
       title: "Catalog",
       items: [
         { label: "Products", href: "/warehouse/products", icon: Package },
+        { label: "Expenses", href: "/accountant/expenses", icon: Receipt },
+        { label: "Analytics", href: "/admin/analytics", icon: PieChart },
       ],
     },
   ],
@@ -112,6 +114,8 @@ const ROLE_NAV: Record<Role, NavGroup[]> = {
         { label: "Sales Overview", href: "/sales/history", icon: BarChart3 },
         { label: "Customers", href: "/sales/customers", icon: UserCircle },
         { label: "Returns", href: "/sales/returns", icon: RotateCcw },
+        { label: "Cash Register", href: "/sales/cash-register", icon: DollarSign },
+        { label: "Stock Movements", href: "/warehouse/stock", icon: TrendingUp },
         { label: "Products", href: "/warehouse/products", icon: Package },
       ],
     },
@@ -128,15 +132,20 @@ function SidebarContent({ role, onClose }: { role: Role; onClose: () => void }) 
   const { data: session } = useSession();
   const user = session?.user as any;
   const navGroups = ROLE_NAV[role] || ROLE_NAV.SALES;
+  const [storeName, setStoreName] = useState("FirstLady");
+
+  useEffect(() => {
+    fetch("/api/settings").then(r => r.json()).then(d => { if (d.storeName) setStoreName(d.storeName); }).catch(() => {});
+  }, []);
 
   return (
     <div className="flex flex-col h-full">
       {/* Logo */}
       <div className="flex items-center justify-between h-16 px-6 border-b border-gray-100">
         <Link href="/dashboard" className="flex items-center gap-3" onClick={onClose}>
-          <img src="/logo.svg" alt="FirstLady" className="w-10 h-10 rounded-xl shadow-lg shadow-amber-500/25" />
+          <img src="/logo.svg" alt={storeName} className="w-10 h-10 rounded-xl shadow-lg shadow-amber-500/25" />
           <div>
-            <h1 className="text-lg font-bold text-gray-900">FirstLady</h1>
+            <h1 className="text-lg font-bold text-gray-900">{storeName}</h1>
             <p className="text-[10px] text-gray-400 -mt-0.5">POS System</p>
           </div>
         </Link>
