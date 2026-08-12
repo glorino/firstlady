@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FileText, Download, BarChart3, PieChart, TrendingUp, Loader2, CheckCircle2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -225,7 +225,7 @@ const REPORTS: ReportDef[] = [
   },
 ];
 
-function buildPdf(name: string, columns: string[], data: (string | number)[][], period: string) {
+function buildPdf(name: string, columns: string[], data: (string | number)[][], period: string, storeName: string) {
   const jsPDF = require("jspdf").default;
   const autoTable = require("jspdf-autotable").default;
 
@@ -237,7 +237,7 @@ function buildPdf(name: string, columns: string[], data: (string | number)[][], 
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(20);
   doc.setFont("helvetica", "bold");
-  doc.text("FirstLady POS", 15, 15);
+  doc.text(`${storeName} POS`, 15, 15);
   doc.setFontSize(12);
   doc.setFont("helvetica", "normal");
   doc.text(name, 15, 23);
@@ -265,7 +265,7 @@ function buildPdf(name: string, columns: string[], data: (string | number)[][], 
     doc.setFontSize(8);
     doc.setTextColor(150);
     doc.text(
-      `Page ${i} of ${pageCount}  |  FirstLady POS & Stock Management  |  Confidential`,
+      `Page ${i} of ${pageCount}  |  ${storeName} POS & Stock Management  |  Confidential`,
       pageWidth / 2,
       doc.internal.pageSize.getHeight() - 10,
       { align: "center" }
@@ -279,12 +279,17 @@ export default function ReportsPage() {
   const [period, setPeriod] = useState("monthly");
   const [generatingId, setGeneratingId] = useState<string | null>(null);
   const [generatedIds, setGeneratedIds] = useState<Set<string>>(new Set());
+  const [storeName, setStoreName] = useState("FirstLady");
+
+  useEffect(() => {
+    fetch("/api/settings").then(r => r.json()).then(d => { if (d.storeName) setStoreName(d.storeName); }).catch(() => {});
+  }, []);
 
   const handleGenerate = async (report: ReportDef) => {
     setGeneratingId(report.id);
     try {
       const { columns, data } = await report.fetcher(period);
-      buildPdf(report.name, columns, data, period);
+      buildPdf(report.name, columns, data, period, storeName);
       setGeneratedIds((prev) => new Set(prev).add(report.id));
     } catch (e) {
       console.error("Failed to generate report", e);

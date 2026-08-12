@@ -46,7 +46,7 @@ function exportCsv(sales: any[]) {
   URL.revokeObjectURL(url);
 }
 
-function exportPdf(sales: any[]) {
+function exportPdf(sales: any[], storeName: string) {
   const jsPDF = require("jspdf").default;
   const autoTable = require("jspdf-autotable").default;
 
@@ -58,7 +58,7 @@ function exportPdf(sales: any[]) {
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(18);
   doc.setFont("helvetica", "bold");
-  doc.text("FirstLady POS", 15, 13);
+  doc.text(`${storeName} POS`, 15, 13);
   doc.setFontSize(11);
   doc.setFont("helvetica", "normal");
   doc.text("Sales History Report", 15, 21);
@@ -92,7 +92,7 @@ function exportPdf(sales: any[]) {
     doc.setFontSize(8);
     doc.setTextColor(150);
     doc.text(
-      "Page " + i + " of " + pageCount + "  |  FirstLady POS & Stock Management",
+      "Page " + i + " of " + pageCount + `  |  ${storeName} POS & Stock Management`,
       pageWidth / 2,
       doc.internal.pageSize.getHeight() - 10,
       { align: "center" }
@@ -106,9 +106,11 @@ export default function SalesHistoryPage() {
   const [sales, setSales] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [storeName, setStoreName] = useState("FirstLady");
 
   useEffect(() => {
     fetchSales();
+    fetch("/api/settings").then(r => r.json()).then(d => { if (d.storeName) setStoreName(d.storeName); }).catch(() => {});
   }, []);
 
   const fetchSales = async () => {
@@ -150,7 +152,7 @@ export default function SalesHistoryPage() {
             <Download className="w-4 h-4 mr-2" />
             Export CSV
           </Button>
-          <Button variant="outline" onClick={() => exportPdf(filteredSales)}>
+          <Button variant="outline" onClick={() => exportPdf(filteredSales, storeName)}>
             <Download className="w-4 h-4 mr-2" />
             Export PDF
           </Button>
