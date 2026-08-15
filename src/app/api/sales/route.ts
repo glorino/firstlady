@@ -72,6 +72,14 @@ export async function POST(req: Request) {
 
     const userId = authResult.user.id;
 
+    // Check if user has an open cash register
+    const openRegister = await prisma.cashRegister.findFirst({
+      where: { userId, status: "OPEN" },
+    });
+    if (!openRegister) {
+      return NextResponse.json({ error: "No open cash register. Please open a cash register before processing sales." }, { status: 400 });
+    }
+
     // Validate stock availability, costPrice, and unitPrice from DB (not client)
     const productIds = items.map((item: any) => item.productId);
     const dbProducts = await prisma.product.findMany({

@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search, ShoppingCart, Plus, Minus, CreditCard, Banknote,
-  Smartphone, Package, Loader2, CheckCircle2
+  Smartphone, Package, Loader2, CheckCircle2, Lock, AlertCircle, DollarSign
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,8 @@ export default function POSPage() {
   const [processing, setProcessing] = useState(false);
   const [success, setSuccess] = useState(false);
   const [saleError, setSaleError] = useState("");
+  const [cashRegisterOpen, setCashRegisterOpen] = useState(false);
+  const [checkingRegister, setCheckingRegister] = useState(true);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -37,6 +39,20 @@ export default function POSPage() {
   }, []);
 
   const [taxRate, setTaxRate] = useState(7.5);
+
+  const checkCashRegister = async () => {
+    try {
+      const res = await fetch("/api/cash-register?status=OPEN");
+      const json = await res.json();
+      const registers = json.data || json;
+      setCashRegisterOpen(registers.length > 0);
+    } catch (error) {
+      console.error("Failed to check cash register:", error);
+      setCashRegisterOpen(false);
+    } finally {
+      setCheckingRegister(false);
+    }
+  };
 
   useEffect(() => {
     Promise.all([
@@ -48,6 +64,8 @@ export default function POSPage() {
       setCategories(categories.data || categories);
       if (settings.taxRate) setTaxRate(Number(settings.taxRate));
     }).catch(() => {}).finally(() => setLoading(false));
+    
+    checkCashRegister();
   }, []);
 
   const fetchProducts = async () => {
@@ -159,6 +177,56 @@ export default function POSPage() {
       setProcessing(false);
     }
   };
+
+const handleProceedToPayment = () => {
+    if (!cashRegisterOpen) {
+      setShowPayment(false);
+      return;
+    }
+    setAmountPaid(total.toFixed(2));
+    setShowPayment(true);
+  };
+
+  if (checkingRegister) {
+    return (
+      <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
+          <p className="text-gray-500">Checking cash register...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!cashRegisterOpen) {
+    return (
+      <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardContent className="p-8 text-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-amber-100 flex items-center justify-center">
+              <Lock className="w-8 h-8 text-amber-600" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Cash Register Closed</h2>
+            <p className="text-gray-500 mb-6">
+              You must open a cash register before using the POS terminal.
+              Please open a register to start recording sales.
+            </p>
+            <Button 
+              size="lg" 
+              className="w-full"
+              onClick={() => window.location.href = "/dashboard/sales/cash-register"}
+            >
+              <DollarSign className="w-5 h-5 mr-2" />
+              Open Cash Register
+            </Button>
+            <p className="text-xs text-gray-400 mt-4">
+              Or navigate to Sales → Cash Register from the sidebar
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-[calc(100vh-4rem)] gap-4 overflow-hidden">
@@ -323,10 +391,7 @@ export default function POSPage() {
             className="w-full"
             size="lg"
             disabled={cart.length === 0}
-            onClick={() => {
-              setAmountPaid(total.toFixed(2));
-              setShowPayment(true);
-            }}
+            onClick={handleProceedToPayment}
           >
             <CreditCard className="w-5 h-5 mr-2" />
             Proceed to Payment
@@ -421,8 +486,7 @@ export default function POSPage() {
               </div>
             </>
           )}
-        </DialogContent>
-      </Dialog>
+        </DialogContent></Dialog>
     </div>
   );
 }
