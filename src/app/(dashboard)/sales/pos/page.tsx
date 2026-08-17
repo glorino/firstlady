@@ -214,7 +214,7 @@ const handleProceedToPayment = () => {
             <Button 
               size="lg" 
               className="w-full"
-              onClick={() => window.location.href = "/dashboard/sales/cash-register"}
+              onClick={() => window.location.href = "/sales/cash-register"}
             >
               <DollarSign className="w-5 h-5 mr-2" />
               Open Cash Register
