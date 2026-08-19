@@ -454,41 +454,51 @@ const handleProceedToPayment = () => {
               <p className="text-gray-500 mt-1 mb-4">Sale has been recorded</p>
               
               {/* Receipt Preview */}
-              <div id="receipt" className="w-full max-w-sm bg-white border border-gray-200 rounded-xl p-3 text-left text-[11px] font-mono leading-tight">
-                <div className="text-center border-b border-dashed border-gray-300 pb-2 mb-2">
-                  <p className="text-sm font-bold">{storeName}</p>
-                  <p className="text-gray-500 text-[10px]">{storeAddress}</p>
-                  <p className="text-gray-500 text-[10px]">{storePhone}</p>
+              <div id="receipt" className="w-full max-w-sm bg-white border border-gray-200 rounded-xl p-4 text-left text-xs font-mono">
+                <div className="text-center border-b border-dashed border-gray-300 pb-3 mb-3">
+                  <p className="text-lg font-bold">{storeName}</p>
+                  <p className="text-gray-500">{storeAddress}</p>
+                  <p className="text-gray-500">{storePhone}</p>
                 </div>
-                <div className="space-y-0.5 mb-2">
+                <div className="space-y-1 mb-3">
                   <p>Date: {new Date().toLocaleDateString("en-NG")}</p>
                   <p>Time: {new Date().toLocaleTimeString("en-NG")}</p>
                   <p>Receipt: {lastSaleInvoice}</p>
                   <p>Cashier: {user?.name || "N/A"}</p>
                 </div>
-                <div className="border-t border-dashed border-gray-300 pt-1 mb-1">
+                <div className="border-t border-dashed border-gray-300 pt-2 mb-2">
                   {lastSaleItems.map((item: any, idx: number) => (
-                    <div key={idx} className="flex justify-between py-px">
+                    <div key={idx} className="flex justify-between py-0.5">
                       <span className="truncate flex-1">{item.name} x{item.qty}</span>
-                      <span className="ml-1">{formatCurrency(item.total)}</span>
+                      <span className="ml-2">{formatCurrency(item.total)}</span>
                     </div>
                   ))}
                 </div>
-                <div className="border-t border-dashed border-gray-300 pt-1 space-y-px">
+                <div className="border-t border-dashed border-gray-300 pt-2 space-y-1">
                   <div className="flex justify-between"><span>Subtotal</span><span>{formatCurrency(lastSaleSubtotal)}</span></div>
                   {lastSaleDiscount > 0 && <div className="flex justify-between text-emerald-600"><span>Discount</span><span>-{formatCurrency(lastSaleDiscount)}</span></div>}
                   <div className="flex justify-between"><span>Tax</span><span>{formatCurrency(lastSaleTax)}</span></div>
-                  <div className="flex justify-between font-bold text-xs"><span>TOTAL</span><span>{formatCurrency(lastSaleTotal)}</span></div>
+                  <div className="flex justify-between font-bold text-sm"><span>TOTAL</span><span>{formatCurrency(lastSaleTotal)}</span></div>
                   <div className="flex justify-between"><span>Paid</span><span>{formatCurrency(lastSalePaid)}</span></div>
                   {lastSaleChange > 0 && <div className="flex justify-between font-bold"><span>CHANGE</span><span>{formatCurrency(lastSaleChange)}</span></div>}
                 </div>
-                <div className="text-center border-t border-dashed border-gray-300 pt-2 mt-2">
-                  <p className="text-[10px]">Thank you for your patronage!</p>
+                <div className="text-center border-t border-dashed border-gray-300 pt-3 mt-3">
+                  <p>Thank you for your patronage!</p>
                 </div>
               </div>
 
               <div className="flex gap-2 mt-4 w-full max-w-sm">
-                <Button variant="outline" className="flex-1" onClick={() => window.print()}>
+                <Button variant="outline" className="flex-1" onClick={() => {
+                  const receipt = document.getElementById("receipt");
+                  if (!receipt) return;
+                  const w = window.open("", "_blank", "width=320,height=600");
+                  if (!w) return;
+                  w.document.write(`<html><head><title>Receipt</title><style>@page{size:80mm auto;margin:0}body{margin:0;padding:3mm;font-family:monospace;font-size:11px;line-height:1.3}*{box-sizing:border-box}.text-center{text-align:center}.font-bold{font-weight:700}.border-b{border-bottom:1px dashed #ccc}.border-t{border-top:1px dashed #ccc}.border-dashed{border-style:dashed}.border-gray-300{border-color:#d1d5db}.pb-3{padding-bottom:6px}.mb-3{margin-bottom:6px}.pt-2{padding-top:4px}.mb-2{margin-bottom:4px}.mt-3{margin-top:6px}.pt-3{padding-top:6px}.text-lg{font-size:14px}.text-sm{font-size:11px}.space-y-1>*+*{margin-top:2px}.flex{display:flex}.justify-between{justify-content:space-between}.py-0\\.5{padding-top:1px;padding-bottom:1px}.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.flex-1{flex:1}.ml-2{margin-left:6px}.text-emerald-600{color:#059669}</style></head><body>${receipt.innerHTML}</body></html>`);
+                  w.document.close();
+                  w.focus();
+                  w.print();
+                  w.close();
+                }}>
                   Print Receipt
                 </Button>
                 <Button className="flex-1" onClick={() => {
