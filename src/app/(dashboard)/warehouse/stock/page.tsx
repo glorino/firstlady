@@ -30,6 +30,7 @@ export default function StockMovementsPage() {
   const [transferForm, setTransferForm] = useState({ productId: "", fromWarehouseId: "", toWarehouseId: "", quantity: "", notes: "" });
 
   useEffect(() => { fetchMovements(); fetchProducts(); fetchWarehouses(); }, []);
+  useEffect(() => { if (showTransferDialog) { fetchProducts(); fetchWarehouses(); } }, [showTransferDialog]);
 
   const fetchMovements = async () => {
     try {

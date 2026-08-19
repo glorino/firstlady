@@ -141,11 +141,13 @@ model Product {
   expiryDate    DateTime?
   categoryId    String
   supplierId    String?
+  warehouseId   String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   category      Category   @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   supplier      Supplier?  @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  warehouse     Warehouse? @relation("ProductWarehouse", fields: [warehouseId], references: [id], onDelete: SetNull)
   saleItems     SaleItem[]
   stockMovements StockMovement[]
   purchaseOrderItems PurchaseOrderItem[]
@@ -153,6 +155,7 @@ model Product {
 
   @@index([categoryId])
   @@index([supplierId])
+  @@index([warehouseId])
   @@index([isActive])
   @@index([stockQuantity])
   @@map("products")
@@ -406,6 +409,7 @@ model Warehouse {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  products           Product[] @relation("ProductWarehouse")
   stockMovementsFrom StockMovement[] @relation("StockFromWarehouse")
   stockMovementsTo   StockMovement[] @relation("StockToWarehouse")
 
