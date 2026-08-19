@@ -56,6 +56,8 @@ export default function DashboardPage() {
   const [salesSearch, setSalesSearch] = useState("");
   const [stockSearch, setStockSearch] = useState("");
   const [filterLoading, setFilterLoading] = useState(false);
+  const [salesPage, setSalesPage] = useState(1);
+  const SALES_PER_PAGE = 10;
 
   const showFinancials = role === "ADMIN" || role === "ACCOUNTANT";
 
@@ -94,6 +96,13 @@ export default function DashboardPage() {
       (s: any) => s.customer.toLowerCase().includes(q) || s.product.toLowerCase().includes(q)
     );
   }, [data, salesSearch]);
+
+  const paginatedSales = useMemo(() => {
+    const start = (salesPage - 1) * SALES_PER_PAGE;
+    return filteredSales.slice(start, start + SALES_PER_PAGE);
+  }, [filteredSales, salesPage]);
+
+  const totalSalesPages = Math.ceil(filteredSales.length / SALES_PER_PAGE);
 
   const filteredStock = useMemo(() => {
     if (!data?.lowStockProducts) return [];
@@ -482,7 +491,7 @@ export default function DashboardPage() {
                       type="text"
                       placeholder="Search sales..."
                       value={salesSearch}
-                      onChange={(e) => setSalesSearch(e.target.value)}
+                      onChange={(e) => { setSalesSearch(e.target.value); setSalesPage(1); }}
                       className="pl-8 pr-3 py-1.5 rounded-lg border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 w-44"
                     />
                   </div>
@@ -503,7 +512,8 @@ export default function DashboardPage() {
                   {filteredSales.length === 0 ? (
                     <p className="text-sm text-gray-400 text-center py-4">No sales for this period</p>
                   ) : (
-                    filteredSales.map((sale: any, i: number) => (
+                    <>
+                    {paginatedSales.map((sale: any, i: number) => (
                       <motion.div
                         key={sale.id}
                         initial={{ opacity: 0, x: -10 }}
@@ -530,6 +540,17 @@ export default function DashboardPage() {
                         </div>
                       </motion.div>
                     ))
+                    }
+                    {totalSalesPages > 1 && (
+                      <div className="flex items-center justify-between pt-2">
+                        <p className="text-xs text-gray-400">Page {salesPage} of {totalSalesPages}</p>
+                        <div className="flex gap-1">
+                          <button onClick={() => setSalesPage(p => Math.max(1, p - 1))} disabled={salesPage === 1} className="px-2 py-1 rounded text-xs bg-gray-100 hover:bg-gray-200 disabled:opacity-40 disabled:cursor-not-allowed">Prev</button>
+                          <button onClick={() => setSalesPage(p => Math.min(totalSalesPages, p + 1))} disabled={salesPage === totalSalesPages} className="px-2 py-1 rounded text-xs bg-gray-100 hover:bg-gray-200 disabled:opacity-40 disabled:cursor-not-allowed">Next</button>
+                        </div>
+                      </div>
+                    )}
+                    </>
                   )}
                 </motion.div>
               </AnimatePresence>

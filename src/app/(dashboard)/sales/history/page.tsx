@@ -107,6 +107,8 @@ export default function SalesHistoryPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [storeName, setStoreName] = useState("FirstLady");
+  const [page, setPage] = useState(1);
+  const PER_PAGE = 10;
 
   useEffect(() => {
     fetchSales();
@@ -133,6 +135,13 @@ export default function SalesHistoryPage() {
     ),
     [sales, search]
   );
+
+  const paginatedSales = useMemo(() => {
+    const start = (page - 1) * PER_PAGE;
+    return filteredSales.slice(start, start + PER_PAGE);
+  }, [filteredSales, page]);
+
+  const totalPages = Math.ceil(filteredSales.length / PER_PAGE);
 
   const totalRevenue = filteredSales.reduce((sum, s) => sum + Number(s.totalAmount), 0);
   const totalProfit = filteredSales.reduce((sum, s) => {
@@ -188,7 +197,7 @@ export default function SalesHistoryPage() {
                 <Input
                   placeholder="Search by invoice or customer..."
                   value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  onChange={(e) => { setSearch(e.target.value); setPage(1); }}
                   icon={<Search className="w-4 h-4" />}
                 />
               </div>
@@ -221,7 +230,7 @@ export default function SalesHistoryPage() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    filteredSales.map((sale) => (
+                    paginatedSales.map((sale) => (
                       <TableRow key={sale.id}>
                         <TableCell className="font-mono text-sm font-semibold">{sale.invoiceNumber}</TableCell>
                         <TableCell>{sale.customer?.name || "Walk-in"}</TableCell>
@@ -241,6 +250,15 @@ export default function SalesHistoryPage() {
                   )}
                 </TableBody>
               </Table>
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+                  <p className="text-sm text-gray-500">Page {page} of {totalPages} ({filteredSales.length} sales)</p>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>Previous</Button>
+                    <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>Next</Button>
+                  </div>
+                </div>
+              )}
               </div>
             )}
           </CardContent>

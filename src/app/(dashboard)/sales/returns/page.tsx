@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { RotateCcw, Search, Plus, Loader2, Package } from "lucide-react";
+import { RotateCcw, Search, Plus, Loader2, Package, Check, X } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { useSession } from "next-auth/react";
 
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.05 } } };
 const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
@@ -17,11 +18,17 @@ const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
 const statusColors: Record<string, string> = { PENDING: "bg-yellow-100 text-yellow-700", APPROVED: "bg-emerald-100 text-emerald-700", REJECTED: "bg-red-100 text-red-700", COMPLETED: "bg-blue-100 text-blue-700" };
 
 export default function ReturnsPage() {
+  const { data: session } = useSession();
+  const user = session?.user as any;
+  const role = user?.role || "SALES";
+  const canApprove = role === "ADMIN" || role === "ACCOUNTANT";
+
   const [returns, setReturns] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [showDialog, setShowDialog] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [sales, setSales] = useState<any[]>([]);
   const [selectedSale, setSelectedSale] = useState<any>(null);
   const [reason, setReason] = useState("");
@@ -35,6 +42,28 @@ export default function ReturnsPage() {
 
   const fetchSales = async () => {
     try { const res = await fetch("/api/sales?limit=200"); const json = await res.json(); setSales(json.data || json); } catch {}
+  };
+
+  const handleStatusUpdate = async (id: string, status: "APPROVED" | "REJECTED") => {
+    if (!confirm(`Are you sure you want to ${status.toLowerCase()} this return?`)) return;
+    setUpdatingId(id);
+    try {
+      const res = await fetch(`/api/returns/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || "Failed to update return");
+        return;
+      }
+      fetchReturns();
+    } catch {
+      alert("Network error. Please try again.");
+    } finally {
+      setUpdatingId(null);
+    }
   };
 
   const handleSaleSelect = (saleId: string) => {
@@ -102,6 +131,7 @@ export default function ReturnsPage() {
                       <TableHead>Reason</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Date</TableHead>
+                      {canApprove && <TableHead>Actions</TableHead>}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -114,6 +144,22 @@ export default function ReturnsPage() {
                         <TableCell className="text-sm text-gray-500 max-w-[200px] truncate">{r.reason}</TableCell>
                         <TableCell><Badge className={statusColors[r.status] || ""}>{r.status}</Badge></TableCell>
                         <TableCell className="text-sm text-gray-500">{formatDate(r.createdAt)}</TableCell>
+                        {canApprove && (
+                          <TableCell>
+                            {r.status === "PENDING" ? (
+                              <div className="flex gap-1">
+                                <Button size="sm" variant="outline" className="h-7 px-2 text-emerald-600 border-emerald-200 hover:bg-emerald-50" onClick={() => handleStatusUpdate(r.id, "APPROVED")} disabled={updatingId === r.id}>
+                                  {updatingId === r.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                                </Button>
+                                <Button size="sm" variant="outline" className="h-7 px-2 text-red-600 border-red-200 hover:bg-red-50" onClick={() => handleStatusUpdate(r.id, "REJECTED")} disabled={updatingId === r.id}>
+                                  {updatingId === r.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <X className="w-3 h-3" />}
+                                </Button>
+                              </div>
+                            ) : (
+                              <span className="text-xs text-gray-400">—</span>
+                            )}
+                          </TableCell>
+                        )}
                       </TableRow>
                     ))}
                     {filtered.length === 0 && (

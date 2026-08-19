@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search, ShoppingCart, Plus, Minus, CreditCard, Banknote,
@@ -45,13 +45,6 @@ export default function POSPage() {
   const [lastSaleTotal, setLastSaleTotal] = useState(0);
   const [lastSalePaid, setLastSalePaid] = useState(0);
   const [lastSaleChange, setLastSaleChange] = useState(0);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    };
-  }, []);
 
   const [taxRate, setTaxRate] = useState(7.5);
 
@@ -191,14 +184,7 @@ export default function POSPage() {
         setLastSaleTotal(total);
         setLastSalePaid(parseFloat(amountPaid));
         setLastSaleChange(Math.max(0, parseFloat(amountPaid) - total));
-        timeoutRef.current = setTimeout(() => {
-          setCart([]);
-          setShowPayment(false);
-          setSuccess(false);
-          setAmountPaid("");
-          setDiscountPercent("");
-          fetchProducts();
-        }, 2000);
+        fetchProducts();
       } else {
         setSaleError(data.error || "Failed to process sale");
       }
