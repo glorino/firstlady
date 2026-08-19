@@ -43,13 +43,13 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    const { items, paymentMethod, amountPaid, taxRate, customerId } = body;
+    const { items, paymentMethod, amountPaid, taxRate, customerId, discountRate } = body;
 
     if (!items?.length || !paymentMethod || !amountPaid) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const validMethods = ["CASH", "CARD", "TRANSFER", "MOBILE"];
+    const validMethods = ["CASH", "CARD", "TRANSFER"];
     if (!validMethods.includes(paymentMethod)) {
       return NextResponse.json({ error: "Invalid payment method" }, { status: 400 });
     }
@@ -59,12 +59,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid tax rate" }, { status: 400 });
     }
 
+    const discRate = Number(discountRate) || 0;
+    if (discRate < 0 || discRate > 100) {
+      return NextResponse.json({ error: "Invalid discount rate" }, { status: 400 });
+    }
+
     const subtotal = items.reduce(
       (sum: number, item: any) => sum + Number(item.unitPrice) * item.quantity,
       0
     );
-    const taxAmount = subtotal * (rate / 100);
-    const totalAmount = subtotal + taxAmount;
+    const discountAmount = subtotal * (discRate / 100);
+    const afterDiscount = subtotal - discountAmount;
+    const taxAmount = afterDiscount * (rate / 100);
+    const totalAmount = afterDiscount + taxAmount;
     const paid = Number(amountPaid);
     if (paid < totalAmount) {
       return NextResponse.json({ error: "Insufficient payment" }, { status: 400 });
@@ -111,6 +118,8 @@ export async function POST(req: Request) {
           userId,
           customerId: customerId || null,
           subtotal,
+          discountRate: discRate,
+          discountAmount,
           taxRate: rate,
           taxAmount,
           totalAmount,

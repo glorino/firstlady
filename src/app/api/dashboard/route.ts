@@ -69,6 +69,8 @@ export async function GET(request: Request) {
       totalRevenueAgg,
       totalExpensesAgg,
       totalSalesCount,
+      totalChangeGiven,
+      totalAmountPaid,
     ] = await Promise.all([
       prisma.product.count({ where: { isActive: true } }),
       prisma.product.findMany({
@@ -80,10 +82,13 @@ export async function GET(request: Request) {
       prisma.sale.aggregate({ _sum: { totalAmount: true }, where: COMPLETED_FILTER }),
       prisma.expense.aggregate({ _sum: { amount: true } }),
       prisma.sale.count({ where: COMPLETED_FILTER }),
+      prisma.sale.aggregate({ _sum: { changeGiven: true }, where: COMPLETED_FILTER }),
+      prisma.sale.aggregate({ _sum: { amountPaid: true }, where: COMPLETED_FILTER }),
     ]);
 
     // Filter low stock using actual minStockLevel per product
     const lowStockItems = lowStockProducts.filter((p) => p.stockQuantity <= p.minStockLevel);
+    const outOfStockItems = lowStockProducts.filter((p) => p.stockQuantity === 0);
 
     // Compute filtered stats
     const filteredRevenue = filteredSales.reduce(
@@ -284,11 +289,15 @@ export async function GET(request: Request) {
         totalCogs: showFinancials ? totalCogs : 0,
         totalProducts,
         lowStockCount: lowStockItems.length,
+        outOfStock: outOfStockItems.length,
         totalCustomers,
         totalUsers,
         totalSalesCount,
         todaySalesCount: filteredSales.length,
         filteredExpenses: filteredExpenseTotal,
+        totalChangeGiven: showFinancials ? Number(totalChangeGiven._sum.changeGiven || 0) : 0,
+        totalAmountPaid: showFinancials ? Number(totalAmountPaid._sum.amountPaid || 0) : 0,
+        overage: showFinancials ? (Number(totalAmountPaid._sum.amountPaid || 0) - totalRevenue) : 0,
       },
       salesChart,
       categoryChart: Object.entries(catMap).map(([name, value]) => ({ name, value })),

@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
-import { Plus, Search, Edit, Trash2, Package, Loader2 } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Package, Loader2, Upload } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -328,7 +328,48 @@ export default function ProductsPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <Input label="Barcode" value={formData.barcode} onChange={(e) => setFormData({ ...formData, barcode: e.target.value })} />
-              <Input label="Image URL" value={formData.image} onChange={(e) => setFormData({ ...formData, image: e.target.value })} placeholder="/products/example.svg" />
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-gray-700">Product Image</label>
+                <div className="flex gap-2">
+                  <Input
+                    value={formData.image}
+                    onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                    placeholder="/products/example.svg"
+                    className="flex-1"
+                  />
+                  <label className="flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors">
+                    <Upload className="w-4 h-4 text-blue-600" />
+                    <span className="text-sm text-blue-600">Upload</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const fd = new FormData();
+                        fd.append("file", file);
+                        try {
+                          const res = await fetch("/api/upload", { method: "POST", body: fd });
+                          const data = await res.json();
+                          if (res.ok && data.url) {
+                            setFormData({ ...formData, image: data.url });
+                          } else {
+                            alert(data.error || "Upload failed");
+                          }
+                        } catch {
+                          alert("Upload failed");
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
+                {formData.image && (
+                  <div className="mt-2 w-16 h-16 rounded-lg border border-gray-200 overflow-hidden">
+                    <img src={formData.image} alt="Preview" className="w-full h-full object-contain" />
+                  </div>
+                )}
+              </div>
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-gray-700">Category</label>

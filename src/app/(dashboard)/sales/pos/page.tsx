@@ -14,8 +14,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatCurrency, cn } from "@/lib/utils";
 import { CartItem, PaymentMethod } from "@/types";
+import { useSession } from "next-auth/react";
 
 export default function POSPage() {
+  const { data: session } = useSession();
+  const user = session?.user as any;
   const [products, setProducts] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -30,6 +33,18 @@ export default function POSPage() {
   const [saleError, setSaleError] = useState("");
   const [cashRegisterOpen, setCashRegisterOpen] = useState(false);
   const [checkingRegister, setCheckingRegister] = useState(true);
+  const [discountPercent, setDiscountPercent] = useState("");
+  const [storeName, setStoreName] = useState("FirstLady Store");
+  const [storeAddress, setStoreAddress] = useState("");
+  const [storePhone, setStorePhone] = useState("");
+  const [lastSaleInvoice, setLastSaleInvoice] = useState("");
+  const [lastSaleItems, setLastSaleItems] = useState<any[]>([]);
+  const [lastSaleSubtotal, setLastSaleSubtotal] = useState(0);
+  const [lastSaleDiscount, setLastSaleDiscount] = useState(0);
+  const [lastSaleTax, setLastSaleTax] = useState(0);
+  const [lastSaleTotal, setLastSaleTotal] = useState(0);
+  const [lastSalePaid, setLastSalePaid] = useState(0);
+  const [lastSaleChange, setLastSaleChange] = useState(0);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -63,6 +78,9 @@ export default function POSPage() {
       setProducts(products.data || products);
       setCategories(categories.data || categories);
       if (settings.taxRate) setTaxRate(Number(settings.taxRate));
+      if (settings.storeName) setStoreName(settings.storeName);
+      if (settings.storeAddress) setStoreAddress(settings.storeAddress);
+      if (settings.storePhone) setStorePhone(settings.storePhone);
     }).catch(() => {}).finally(() => setLoading(false));
     
     checkCashRegister();
@@ -131,8 +149,11 @@ export default function POSPage() {
   };
 
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const taxAmount = subtotal * (taxRate / 100);
-  const total = subtotal + taxAmount;
+  const discountRate = parseFloat(discountPercent || "0");
+  const discountAmount = subtotal * (discountRate / 100);
+  const afterDiscount = subtotal - discountAmount;
+  const taxAmount = afterDiscount * (taxRate / 100);
+  const total = afterDiscount + taxAmount;
   const change = parseFloat(amountPaid || "0") - total;
 
   const processSale = async () => {
@@ -154,6 +175,7 @@ export default function POSPage() {
           paymentMethod,
           amountPaid: parseFloat(amountPaid),
           taxRate,
+          discountRate: discountRate,
         }),
       });
 
@@ -161,11 +183,20 @@ export default function POSPage() {
 
       if (res.ok) {
         setSuccess(true);
+        setLastSaleInvoice(data.invoiceNumber || "");
+        setLastSaleItems(cart.map((item) => ({ name: item.name, qty: item.quantity, total: item.price * item.quantity })));
+        setLastSaleSubtotal(subtotal);
+        setLastSaleDiscount(discountAmount);
+        setLastSaleTax(taxAmount);
+        setLastSaleTotal(total);
+        setLastSalePaid(parseFloat(amountPaid));
+        setLastSaleChange(Math.max(0, parseFloat(amountPaid) - total));
         timeoutRef.current = setTimeout(() => {
           setCart([]);
           setShowPayment(false);
           setSuccess(false);
           setAmountPaid("");
+          setDiscountPercent("");
           fetchProducts();
         }, 2000);
       } else {
@@ -379,6 +410,30 @@ const handleProceedToPayment = () => {
             <span className="text-gray-500">Subtotal</span>
             <span className="font-medium">{formatCurrency(subtotal)}</span>
           </div>
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-gray-500">Discount (%)</span>
+            <input
+              type="number"
+              min="0"
+              max="100"
+              step="0.5"
+              value={discountPercent}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === "" || (parseFloat(val) >= 0 && parseFloat(val) <= 100)) {
+                  setDiscountPercent(val);
+                }
+              }}
+              className="w-20 text-right border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="0"
+            />
+          </div>
+          {discountAmount > 0 && (
+            <div className="flex justify-between text-sm text-emerald-600">
+              <span>Discount</span>
+              <span className="font-medium">-{formatCurrency(discountAmount)}</span>
+            </div>
+          )}
           <div className="flex justify-between text-sm">
             <span className="text-gray-500">Tax ({taxRate}%)</span>
             <span className="font-medium">{formatCurrency(taxAmount)}</span>
@@ -406,11 +461,60 @@ const handleProceedToPayment = () => {
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="flex flex-col items-center py-8"
+              className="flex flex-col items-center py-6"
             >
-              <CheckCircle2 className="w-16 h-16 text-emerald-500 mb-4" />
+              <CheckCircle2 className="w-12 h-12 text-emerald-500 mb-3" />
               <h3 className="text-xl font-bold text-gray-900">Payment Successful!</h3>
-              <p className="text-gray-500 mt-1">Sale has been recorded</p>
+              <p className="text-gray-500 mt-1 mb-4">Sale has been recorded</p>
+              
+              {/* Receipt Preview */}
+              <div id="receipt" className="w-full max-w-sm bg-white border border-gray-200 rounded-xl p-4 text-left text-xs font-mono">
+                <div className="text-center border-b border-dashed border-gray-300 pb-3 mb-3">
+                  <p className="text-lg font-bold">{storeName}</p>
+                  <p className="text-gray-500">{storeAddress}</p>
+                  <p className="text-gray-500">{storePhone}</p>
+                </div>
+                <div className="space-y-1 mb-3">
+                  <p>Date: {new Date().toLocaleDateString("en-NG")}</p>
+                  <p>Time: {new Date().toLocaleTimeString("en-NG")}</p>
+                  <p>Receipt: {lastSaleInvoice}</p>
+                  <p>Cashier: {user?.name || "N/A"}</p>
+                </div>
+                <div className="border-t border-dashed border-gray-300 pt-2 mb-2">
+                  {lastSaleItems.map((item: any, idx: number) => (
+                    <div key={idx} className="flex justify-between py-0.5">
+                      <span className="truncate flex-1">{item.name} x{item.qty}</span>
+                      <span className="ml-2">{formatCurrency(item.total)}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="border-t border-dashed border-gray-300 pt-2 space-y-1">
+                  <div className="flex justify-between"><span>Subtotal</span><span>{formatCurrency(lastSaleSubtotal)}</span></div>
+                  {lastSaleDiscount > 0 && <div className="flex justify-between text-emerald-600"><span>Discount</span><span>-{formatCurrency(lastSaleDiscount)}</span></div>}
+                  <div className="flex justify-between"><span>Tax</span><span>{formatCurrency(lastSaleTax)}</span></div>
+                  <div className="flex justify-between font-bold text-sm"><span>TOTAL</span><span>{formatCurrency(lastSaleTotal)}</span></div>
+                  <div className="flex justify-between"><span>Paid</span><span>{formatCurrency(lastSalePaid)}</span></div>
+                  {lastSaleChange > 0 && <div className="flex justify-between font-bold"><span>CHANGE</span><span>{formatCurrency(lastSaleChange)}</span></div>}
+                </div>
+                <div className="text-center border-t border-dashed border-gray-300 pt-3 mt-3">
+                  <p>Thank you for your patronage!</p>
+                </div>
+              </div>
+
+              <div className="flex gap-2 mt-4 w-full max-w-sm">
+                <Button variant="outline" className="flex-1" onClick={() => window.print()}>
+                  Print Receipt
+                </Button>
+                <Button className="flex-1" onClick={() => {
+                  setCart([]);
+                  setShowPayment(false);
+                  setSuccess(false);
+                  setAmountPaid("");
+                  setDiscountPercent("");
+                }}>
+                  New Sale
+                </Button>
+              </div>
             </motion.div>
           ) : (
             <>
@@ -426,7 +530,7 @@ const handleProceedToPayment = () => {
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">Payment Method</label>
                   <div className="grid grid-cols-3 gap-2">
-                    {(["CASH", "CARD", "TRANSFER", "MOBILE"] as PaymentMethod[]).map((method) => (
+                    {(["CASH", "CARD", "TRANSFER"] as PaymentMethod[]).map((method) => (
                       <button
                         key={method}
                         onClick={() => setPaymentMethod(method)}
@@ -439,7 +543,6 @@ const handleProceedToPayment = () => {
                       >
                         {method === "CASH" && <Banknote className="w-5 h-5" />}
                         {method === "CARD" && <CreditCard className="w-5 h-5" />}
-                        {method === "MOBILE" && <Smartphone className="w-5 h-5" />}
                         {method === "TRANSFER" && <Banknote className="w-5 h-5" />}
                         <span className="text-xs font-medium">{method}</span>
                       </button>

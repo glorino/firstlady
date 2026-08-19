@@ -92,3 +92,24 @@ body {
 *::-webkit-scrollbar-thumb:hover {
   background-color: #94a3b8;
 }
+
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+  #receipt,
+  #receipt * {
+    visibility: visible !important;
+  }
+  #receipt {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 80mm;
+    font-size: 12px;
+    padding: 5mm;
+    background: white;
+    border: none !important;
+    box-shadow: none !important;
+  }
+}

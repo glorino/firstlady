@@ -18,7 +18,7 @@ export async function GET(req: Request) {
     const [movements, total] = await Promise.all([
       prisma.stockMovement.findMany({
         where,
-        include: { product: true, user: true },
+        include: { product: true, user: true, fromWarehouse: true, toWarehouse: true },
         orderBy: { createdAt: "desc" },
         skip,
         take: limit,
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    const { productId, type, quantity, notes, reference } = body;
+    const { productId, type, quantity, notes, reference, fromWarehouseId, toWarehouseId } = body;
 
     if (!productId || !type || !quantity) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -48,6 +48,10 @@ export async function POST(req: Request) {
     const validTypes = ["PURCHASE", "SALE", "ADJUSTMENT", "RETURN", "TRANSFER"];
     if (!validTypes.includes(type)) {
       return NextResponse.json({ error: "Invalid movement type" }, { status: 400 });
+    }
+
+    if (type === "TRANSFER" && (!fromWarehouseId || !toWarehouseId)) {
+      return NextResponse.json({ error: "Transfer requires fromWarehouseId and toWarehouseId" }, { status: 400 });
     }
 
     const qty = Number(quantity);
@@ -88,6 +92,8 @@ export async function POST(req: Request) {
           quantity: qty,
           notes: notes || null,
           reference: reference || null,
+          fromWarehouseId: type === "TRANSFER" ? fromWarehouseId : null,
+          toWarehouseId: type === "TRANSFER" ? toWarehouseId : type === "PURCHASE" ? toWarehouseId : null,
         },
       });
 

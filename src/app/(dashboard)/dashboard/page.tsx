@@ -118,6 +118,7 @@ export default function DashboardPage() {
   const salesChart = data?.salesChart || [];
   const categoryChart = data?.categoryChart || [];
   const insights = data?.insights || [];
+  const isWarehouse = role === "WAREHOUSE";
 
   return (
     <motion.div
@@ -182,8 +183,52 @@ export default function DashboardPage() {
         </Card>
       </motion.div>
 
-      {/* Stats Cards — Admin & Accountant only */}
-      {showFinancials && (
+      {/* Stats Cards */}
+      {isWarehouse ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { label: "Total Products", value: String(stats.totalProducts || 0), sub: "Active in inventory", icon: Package, bg: "bg-blue-50", iconColor: "text-blue-600" },
+            { label: "Low Stock Alerts", value: String(stats.lowStockCount || 0), sub: "Need reorder", icon: AlertTriangle, bg: "bg-amber-50", iconColor: "text-amber-600" },
+            { label: "Categories", value: String(data?.categoryChart?.length || 0), sub: "Product categories", icon: Package, bg: "bg-purple-50", iconColor: "text-purple-600" },
+            { label: "Out of Stock", value: String(stats.outOfStock || 0), sub: "Products at zero", icon: AlertTriangle, bg: "bg-red-50", iconColor: "text-red-600" },
+          ].map((stat, i) => (
+            <motion.div
+              key={stat.label}
+              variants={cardItem}
+              custom={i}
+              initial="hidden"
+              animate="show"
+              whileHover={{ y: -4, transition: { duration: 0.2 } }}
+            >
+              <Card hover>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">{stat.label}</p>
+                      <motion.p
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="text-2xl font-bold text-gray-900 mt-1"
+                      >
+                        {stat.value}
+                      </motion.p>
+                      <p className="text-xs text-gray-400 mt-1">{stat.sub}</p>
+                    </div>
+                    <motion.div
+                      className={`w-12 h-12 rounded-xl ${stat.bg} flex items-center justify-center`}
+                      whileHover={{ rotate: 10, scale: 1.1 }}
+                      transition={{ type: "spring", stiffness: 300 }}
+                    >
+                      <stat.icon className={`w-6 h-6 ${stat.iconColor}`} />
+                    </motion.div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+      ) : showFinancials && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
             { label: "Period Sales", value: formatCurrency(stats.todayRevenue || 0), sub: `${stats.todaySalesCount || 0} transactions`, icon: ShoppingCart, bg: "bg-blue-50", iconColor: "text-blue-600" },
@@ -295,6 +340,28 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         </motion.div>
+      )}
+
+      {/* Change & Overage Cards */}
+      {showFinancials && stats.totalChangeGiven > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Card>
+            <CardContent className="p-4">
+              <p className="text-sm text-gray-500">Total Change Given</p>
+              <p className="text-2xl font-bold text-amber-600 mt-1">{formatCurrency(stats.totalChangeGiven || 0)}</p>
+              <p className="text-xs text-gray-400 mt-1">Cash returned to customers</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <p className="text-sm text-gray-500">Payment Overage</p>
+              <p className={cn("text-2xl font-bold mt-1", (stats.overage || 0) >= 0 ? "text-emerald-600" : "text-red-600")}>
+                {formatCurrency(stats.overage || 0)}
+              </p>
+              <p className="text-xs text-gray-400 mt-1">Amount paid above total sales</p>
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       {/* Charts Row */}
