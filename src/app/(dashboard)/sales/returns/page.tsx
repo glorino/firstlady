@@ -22,6 +22,7 @@ export default function ReturnsPage() {
   const user = session?.user as any;
   const role = user?.role || "SALES";
   const canApprove = role === "ADMIN" || role === "ACCOUNTANT";
+  const canCreateReturn = role !== "ACCOUNTANT";
 
   const [returns, setReturns] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -106,9 +107,11 @@ export default function ReturnsPage() {
           <h1 className="text-2xl font-bold text-gray-900">Returns</h1>
           <p className="text-gray-500 mt-1">Manage product returns and refunds</p>
         </div>
-        <Button onClick={() => { setSelectedSale(null); setReason(""); setReturnItems([]); setShowDialog(true); }}>
-          <Plus className="w-4 h-4 mr-2" /> New Return
-        </Button>
+        {canCreateReturn && (
+          <Button onClick={() => { setSelectedSale(null); setReason(""); setReturnItems([]); setShowDialog(true); }}>
+            <Plus className="w-4 h-4 mr-2" /> New Return
+          </Button>
+        )}
       </motion.div>
 
       <motion.div variants={item}>

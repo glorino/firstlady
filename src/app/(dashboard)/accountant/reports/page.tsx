@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatCurrency, formatCurrencyN, formatDate } from "@/lib/utils";
+import { useSession } from "next-auth/react";
 
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } } as const;
 const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
@@ -18,6 +19,7 @@ type ReportDef = {
   description: string;
   icon: any;
   colorClass: string;
+  roles: string[];
   fetcher: (period: string) => Promise<{ columns: string[]; data: (string | number)[][] }>;
 };
 
@@ -65,6 +67,7 @@ const REPORTS: ReportDef[] = [
     description: "Complete breakdown of sales transactions",
     icon: BarChart3,
     colorClass: "blue",
+    roles: ["ADMIN", "SALES", "ACCOUNTANT"],
     fetcher: async (period) => {
       const res = await fetch("/api/sales?limit=200");
       const json = await res.json();
@@ -90,6 +93,7 @@ const REPORTS: ReportDef[] = [
     description: "Current stock levels and valuation",
     icon: PieChart,
     colorClass: "emerald",
+    roles: ["ADMIN", "WAREHOUSE"],
     fetcher: async () => {
       const res = await fetch("/api/products?limit=200");
       const json = await res.json();
@@ -114,6 +118,7 @@ const REPORTS: ReportDef[] = [
     description: "Revenue, costs, and profit analysis",
     icon: TrendingUp,
     colorClass: "purple",
+    roles: ["ADMIN", "ACCOUNTANT"],
     fetcher: async (period) => {
       const [salesRes, expensesRes] = await Promise.all([
         fetch("/api/sales?limit=200"),
@@ -160,6 +165,7 @@ const REPORTS: ReportDef[] = [
     description: "Customer purchase history and totals",
     icon: FileText,
     colorClass: "amber",
+    roles: ["ADMIN", "SALES"],
     fetcher: async () => {
       const res = await fetch("/api/customers?limit=200");
       const json = await res.json();
@@ -183,6 +189,7 @@ const REPORTS: ReportDef[] = [
     description: "Detailed expense breakdown",
     icon: FileText,
     colorClass: "red",
+    roles: ["ADMIN", "ACCOUNTANT"],
     fetcher: async (period) => {
       const res = await fetch("/api/expenses?limit=200");
       const json = await res.json();
@@ -205,6 +212,7 @@ const REPORTS: ReportDef[] = [
     description: "All inventory in/out movements",
     icon: FileText,
     colorClass: "indigo",
+    roles: ["ADMIN", "WAREHOUSE"],
     fetcher: async (period) => {
       const res = await fetch("/api/stock?limit=200");
       const json = await res.json();
@@ -276,10 +284,16 @@ function buildPdf(name: string, columns: string[], data: (string | number)[][], 
 }
 
 export default function ReportsPage() {
+  const { data: session } = useSession();
+  const user = session?.user as any;
+  const role = user?.role || "ADMIN";
+
   const [period, setPeriod] = useState("monthly");
   const [generatingId, setGeneratingId] = useState<string | null>(null);
   const [generatedIds, setGeneratedIds] = useState<Set<string>>(new Set());
   const [storeName, setStoreName] = useState("FirstLady");
+
+  const visibleReports = REPORTS.filter((r) => r.roles.includes(role));
 
   useEffect(() => {
     fetch("/api/settings").then(r => r.json()).then(d => { if (d.storeName) setStoreName(d.storeName); }).catch(() => {});
@@ -318,7 +332,7 @@ export default function ReportsPage() {
       </motion.div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {REPORTS.map((report) => {
+        {visibleReports.map((report) => {
           const Icon = report.icon;
           const isGenerating = generatingId === report.id;
           const isGenerated = generatedIds.has(report.id);

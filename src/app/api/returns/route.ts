@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { requireAuth } from "@/lib/api-auth";
+import { requireAuth, requireRole } from "@/lib/api-auth";
 import { parsePagination, paginatedResponse } from "@/lib/pagination";
 
 export async function GET(req: Request) {
@@ -26,7 +26,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const authResult = await requireAuth();
+  const authResult = await requireRole("ADMIN", "SALES");
   if (authResult.error) return authResult.error;
 
   try {
