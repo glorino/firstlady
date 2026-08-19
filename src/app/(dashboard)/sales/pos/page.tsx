@@ -454,36 +454,36 @@ const handleProceedToPayment = () => {
               <p className="text-gray-500 mt-1 mb-4">Sale has been recorded</p>
               
               {/* Receipt Preview */}
-              <div id="receipt" className="w-full max-w-sm bg-white border border-gray-200 rounded-xl p-4 text-left text-xs font-mono">
-                <div className="text-center border-b border-dashed border-gray-300 pb-3 mb-3">
-                  <p className="text-lg font-bold">{storeName}</p>
-                  <p className="text-gray-500">{storeAddress}</p>
-                  <p className="text-gray-500">{storePhone}</p>
+              <div id="receipt" className="w-full max-w-sm bg-white border border-gray-200 rounded-xl p-3 text-left text-[11px] font-mono leading-tight">
+                <div className="text-center border-b border-dashed border-gray-300 pb-2 mb-2">
+                  <p className="text-sm font-bold">{storeName}</p>
+                  <p className="text-gray-500 text-[10px]">{storeAddress}</p>
+                  <p className="text-gray-500 text-[10px]">{storePhone}</p>
                 </div>
-                <div className="space-y-1 mb-3">
+                <div className="space-y-0.5 mb-2">
                   <p>Date: {new Date().toLocaleDateString("en-NG")}</p>
                   <p>Time: {new Date().toLocaleTimeString("en-NG")}</p>
                   <p>Receipt: {lastSaleInvoice}</p>
                   <p>Cashier: {user?.name || "N/A"}</p>
                 </div>
-                <div className="border-t border-dashed border-gray-300 pt-2 mb-2">
+                <div className="border-t border-dashed border-gray-300 pt-1 mb-1">
                   {lastSaleItems.map((item: any, idx: number) => (
-                    <div key={idx} className="flex justify-between py-0.5">
+                    <div key={idx} className="flex justify-between py-px">
                       <span className="truncate flex-1">{item.name} x{item.qty}</span>
-                      <span className="ml-2">{formatCurrency(item.total)}</span>
+                      <span className="ml-1">{formatCurrency(item.total)}</span>
                     </div>
                   ))}
                 </div>
-                <div className="border-t border-dashed border-gray-300 pt-2 space-y-1">
+                <div className="border-t border-dashed border-gray-300 pt-1 space-y-px">
                   <div className="flex justify-between"><span>Subtotal</span><span>{formatCurrency(lastSaleSubtotal)}</span></div>
                   {lastSaleDiscount > 0 && <div className="flex justify-between text-emerald-600"><span>Discount</span><span>-{formatCurrency(lastSaleDiscount)}</span></div>}
                   <div className="flex justify-between"><span>Tax</span><span>{formatCurrency(lastSaleTax)}</span></div>
-                  <div className="flex justify-between font-bold text-sm"><span>TOTAL</span><span>{formatCurrency(lastSaleTotal)}</span></div>
+                  <div className="flex justify-between font-bold text-xs"><span>TOTAL</span><span>{formatCurrency(lastSaleTotal)}</span></div>
                   <div className="flex justify-between"><span>Paid</span><span>{formatCurrency(lastSalePaid)}</span></div>
                   {lastSaleChange > 0 && <div className="flex justify-between font-bold"><span>CHANGE</span><span>{formatCurrency(lastSaleChange)}</span></div>}
                 </div>
-                <div className="text-center border-t border-dashed border-gray-300 pt-3 mt-3">
-                  <p>Thank you for your patronage!</p>
+                <div className="text-center border-t border-dashed border-gray-300 pt-2 mt-2">
+                  <p className="text-[10px]">Thank you for your patronage!</p>
                 </div>
               </div>
 
