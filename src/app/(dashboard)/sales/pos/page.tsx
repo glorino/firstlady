@@ -456,7 +456,7 @@ const handleProceedToPayment = () => {
               {/* Receipt Preview */}
               <div id="receipt" className="w-full max-w-sm bg-white border border-gray-200 rounded-xl p-4 text-left text-xs font-mono">
                 <div className="text-center border-b border-dashed border-gray-300 pb-3 mb-3">
-                  <img src="/logo.svg" alt="Logo" className="w-10 h-10 mx-auto mb-1" />
+                  <img src="/logo.svg" alt="Logo" className="w-6 h-6 mx-auto mb-1" />
                   <p className="text-lg font-bold">{storeName}</p>
                   <p className="text-gray-500">{storeAddress}</p>
                   <p className="text-gray-500">{storePhone}</p>
@@ -494,7 +494,7 @@ const handleProceedToPayment = () => {
                   if (!receipt) return;
                   const w = window.open("", "_blank", "width=320,height=600");
                   if (!w) return;
-                  const logoSvg = `<img src="/logo.svg" style="width:40px;height:40px;display:block;margin:0 auto 4px">`;
+                  const logoSvg = `<img src="/logo.svg" style="width:24px;height:24px;display:block;margin:0 auto 4px">`;
                   w.document.write(`<html><head><title>Receipt</title><style>@page{size:80mm auto;margin:0}body{margin:0;padding:3mm;font-family:monospace;font-size:11px;line-height:1.3}*{box-sizing:border-box}.text-center{text-align:center}.font-bold{font-weight:700}.border-b{border-bottom:1px dashed #ccc}.border-t{border-top:1px dashed #ccc}.border-dashed{border-style:dashed}.border-gray-300{border-color:#d1d5db}.pb-3{padding-bottom:6px}.mb-3{margin-bottom:6px}.pt-2{padding-top:4px}.mb-2{margin-bottom:4px}.mt-3{margin-top:6px}.pt-3{padding-top:6px}.text-lg{font-size:14px}.text-sm{font-size:11px}.space-y-1>*+*{margin-top:2px}.flex{display:flex}.justify-between{justify-content:space-between}.py-0\\.5{padding-top:1px;padding-bottom:1px}.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.flex-1{flex:1}.ml-2{margin-left:6px}.text-emerald-600{color:#059669}</style></head><body>${logoSvg}${receipt.innerHTML}</body></html>`);
                   w.document.close();
                   w.focus();

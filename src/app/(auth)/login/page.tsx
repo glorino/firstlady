@@ -110,7 +110,7 @@ export default function LoginPage() {
             transition={{ duration: 0.7 }}
           >
             <div className="flex items-center gap-3 mb-8">
-              <img src="/logo.svg" alt={storeName} className="w-12 h-12 rounded-2xl shadow-lg shadow-amber-500/25" />
+              <img src="/logo.svg" alt={storeName} className="w-12 h-12" />
               <div>
                 <h1 className="text-2xl font-bold text-white">{storeName}</h1>
                 <p className="text-xs text-blue-100">POS & Stock Management</p>
@@ -157,7 +157,7 @@ export default function LoginPage() {
         >
           {/* Mobile Logo */}
           <div className="lg:hidden text-center mb-8">
-            <img src="/logo.svg" alt={storeName} className="w-14 h-14 mx-auto rounded-2xl shadow-xl shadow-amber-500/25 mb-3" />
+            <img src="/logo.svg" alt={storeName} className="w-14 h-14 mx-auto mb-3" />
             <h1 className="text-2xl font-bold text-gray-900">{storeName}</h1>
             <p className="text-gray-500 text-sm mt-0.5">POS & Stock Management</p>
           </div>
