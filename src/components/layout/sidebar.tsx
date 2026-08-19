@@ -13,6 +13,7 @@ import {
 import { cn, getInitials } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import { Role } from "@/generated/prisma";
+import Logo from "@/components/ui/logo";
 
 interface NavItem {
   label: string;
@@ -142,7 +143,7 @@ function SidebarContent({ role, onClose }: { role: Role; onClose: () => void }) 
       {/* Logo */}
       <div className="flex items-center justify-between h-16 px-6 border-b border-gray-100">
         <Link href="/dashboard" className="flex items-center gap-3" onClick={onClose}>
-          <img src="/logo.svg" alt={storeName} className="w-10 h-10" />
+          <Logo size={40} />
           <div>
             <h1 className="text-lg font-bold text-gray-900">{storeName}</h1>
             <p className="text-[10px] text-gray-400 -mt-0.5">POS System</p>

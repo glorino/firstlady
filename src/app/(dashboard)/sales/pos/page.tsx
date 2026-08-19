@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { formatCurrency, cn } from "@/lib/utils";
 import { CartItem, PaymentMethod } from "@/types";
 import { useSession } from "next-auth/react";
+import Logo from "@/components/ui/logo";
 
 export default function POSPage() {
   const { data: session } = useSession();
@@ -456,7 +457,7 @@ const handleProceedToPayment = () => {
               {/* Receipt Preview */}
               <div id="receipt" className="w-full max-w-sm bg-white border border-gray-200 rounded-xl p-4 text-left text-xs font-mono">
                 <div className="text-center border-b border-dashed border-gray-300 pb-3 mb-3">
-                  <img src="/logo.svg" alt="Logo" className="w-5 h-5 mx-auto mb-1" />
+                  <Logo size={20} className="mx-auto mb-1" />
                   <p className="text-lg font-bold">{storeName}</p>
                   <p className="text-gray-500">{storeAddress}</p>
                   <p className="text-gray-500">{storePhone}</p>
@@ -494,7 +495,7 @@ const handleProceedToPayment = () => {
                   if (!receipt) return;
                   const w = window.open("", "_blank", "width=320,height=600");
                   if (!w) return;
-                  const logoSvg = `<img src="/logo.svg" style="width:16px;height:16px;display:block;margin:0 auto 2px">`;
+                  const logoSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="16" height="16" style="display:block;margin:0 auto 2px"><defs><linearGradient id="pbg" x1="0" y1="0" x2="120" y2="120" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#D97706"/><stop offset="50%" stop-color="#B45309"/><stop offset="100%" stop-color="#92400E"/></linearGradient><linearGradient id="pcr" x1="30" y1="20" x2="90" y2="55" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#FEF3C7"/><stop offset="100%" stop-color="#FDE68A"/></linearGradient></defs><rect width="120" height="120" rx="28" fill="url(#pbg)"/><path d="M30 52 L42 28 L54 44 L60 22 L66 44 L78 28 L90 52 Z" fill="url(#pcr)" stroke="#FEF3C7" stroke-width="1.5" stroke-linejoin="round"/><rect x="28" y="50" width="64" height="8" rx="3" fill="#FDE68A"/><circle cx="42" cy="32" r="3" fill="#F59E0B"/><circle cx="60" cy="26" r="3.5" fill="#F59E0B"/><circle cx="78" cy="32" r="3" fill="#F59E0B"/><text x="60" y="82" text-anchor="middle" font-family="Georgia,serif" font-size="26" font-weight="bold" fill="white" letter-spacing="1">FL</text></svg>`;
                   w.document.write(`<html><head><title>Receipt</title><style>@page{size:80mm auto;margin:0}body{margin:0;padding:3mm;font-family:monospace;font-size:11px;line-height:1.3}*{box-sizing:border-box}.text-center{text-align:center}.font-bold{font-weight:700}.border-b{border-bottom:1px dashed #ccc}.border-t{border-top:1px dashed #ccc}.border-dashed{border-style:dashed}.border-gray-300{border-color:#d1d5db}.pb-3{padding-bottom:6px}.mb-3{margin-bottom:6px}.pt-2{padding-top:4px}.mb-2{margin-bottom:4px}.mt-3{margin-top:6px}.pt-3{padding-top:6px}.text-lg{font-size:14px}.text-sm{font-size:11px}.space-y-1>*+*{margin-top:2px}.flex{display:flex}.justify-between{justify-content:space-between}.py-0\\.5{padding-top:1px;padding-bottom:1px}.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.flex-1{flex:1}.ml-2{margin-left:6px}.text-emerald-600{color:#059669}</style></head><body>${logoSvg}${receipt.innerHTML}</body></html>`);
                   w.document.close();
                   w.focus();

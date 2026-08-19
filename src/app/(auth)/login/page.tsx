@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Mail, Lock, Eye, EyeOff, Loader2, Shield, Zap, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import Logo from "@/components/ui/logo";
 
 const rollingTexts = [
   { line1: "Manage your business", line2: "with confidence." },
@@ -110,7 +111,7 @@ export default function LoginPage() {
             transition={{ duration: 0.7 }}
           >
             <div className="flex items-center gap-3 mb-8">
-              <img src="/logo.svg" alt={storeName} className="w-12 h-12" />
+              <Logo size={48} />
               <div>
                 <h1 className="text-2xl font-bold text-white">{storeName}</h1>
                 <p className="text-xs text-blue-100">POS & Stock Management</p>
@@ -157,7 +158,7 @@ export default function LoginPage() {
         >
           {/* Mobile Logo */}
           <div className="lg:hidden text-center mb-8">
-            <img src="/logo.svg" alt={storeName} className="w-14 h-14 mx-auto mb-3" />
+            <Logo size={56} className="mx-auto mb-3" />
             <h1 className="text-2xl font-bold text-gray-900">{storeName}</h1>
             <p className="text-gray-500 text-sm mt-0.5">POS & Stock Management</p>
           </div>
