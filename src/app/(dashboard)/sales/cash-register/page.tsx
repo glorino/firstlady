@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { formatCurrency, formatDateTime } from "@/lib/utils";
+import { formatCurrency, formatDateTime, cn } from "@/lib/utils";
 
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.05 } } };
 const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
@@ -113,9 +113,12 @@ export default function CashRegisterPage() {
             ) : (
               <div className="overflow-x-auto">
                 <Table>
-                  <TableHeader><TableRow><TableHead>User</TableHead><TableHead>Opening</TableHead><TableHead>Closing</TableHead><TableHead>Sales</TableHead><TableHead>Returns</TableHead><TableHead>Expenses</TableHead><TableHead>Status</TableHead><TableHead>Opened</TableHead></TableRow></TableHeader>
+                  <TableHeader><TableRow><TableHead>User</TableHead><TableHead>Opening</TableHead><TableHead>Closing</TableHead><TableHead>Sales</TableHead><TableHead>Returns</TableHead><TableHead>Expenses</TableHead><TableHead>Difference</TableHead><TableHead>Status</TableHead><TableHead>Opened</TableHead></TableRow></TableHeader>
                   <TableBody>
-                    {registers.map((r) => (
+                    {registers.map((r) => {
+                      const expected = Number(r.openingBalance) + Number(r.totalSales) - Number(r.totalReturns) - Number(r.totalExpenses);
+                      const diff = r.closingBalance ? Number(r.closingBalance) - expected : null;
+                      return (
                       <TableRow key={r.id}>
                         <TableCell className="font-medium">{r.user?.name || "—"}</TableCell>
                         <TableCell>{formatCurrency(Number(r.openingBalance))}</TableCell>
@@ -123,11 +126,15 @@ export default function CashRegisterPage() {
                         <TableCell className="text-emerald-600 font-semibold">{formatCurrency(Number(r.totalSales))}</TableCell>
                         <TableCell className="text-red-600">{formatCurrency(Number(r.totalReturns))}</TableCell>
                         <TableCell className="text-red-600">{formatCurrency(Number(r.totalExpenses))}</TableCell>
+                        <TableCell className={cn("font-semibold", diff !== null ? (diff >= 0 ? "text-emerald-600" : "text-red-600") : "text-gray-400")}>
+                          {diff !== null ? (diff >= 0 ? "+" : "") + formatCurrency(diff) : "—"}
+                        </TableCell>
                         <TableCell><Badge variant={r.status === "OPEN" ? "success" : "secondary"}>{r.status}</Badge></TableCell>
                         <TableCell className="text-sm text-gray-500">{formatDateTime(r.openedAt)}</TableCell>
                       </TableRow>
-                    ))}
-                    {registers.length === 0 && <TableRow><TableCell colSpan={8} className="text-center py-8 text-gray-400">No sessions yet</TableCell></TableRow>}
+                      );
+                    })}
+                    {registers.length === 0 && <TableRow><TableCell colSpan={9} className="text-center py-8 text-gray-400">No sessions yet</TableCell></TableRow>}
                   </TableBody>
                 </Table>
               </div>
