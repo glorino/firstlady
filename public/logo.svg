@@ -1,30 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="120" y2="120" gradientUnits="userSpaceOnUse">
+    <linearGradient id="fl-bg" x1="0" y1="0" x2="120" y2="120" gradientUnits="userSpaceOnUse">
       <stop offset="0%" stop-color="#D97706"/>
       <stop offset="50%" stop-color="#B45309"/>
       <stop offset="100%" stop-color="#92400E"/>
     </linearGradient>
-    <linearGradient id="crown" x1="30" y1="20" x2="90" y2="55" gradientUnits="userSpaceOnUse">
+    <linearGradient id="fl-crown" x1="30" y1="20" x2="90" y2="55" gradientUnits="userSpaceOnUse">
       <stop offset="0%" stop-color="#FEF3C7"/>
       <stop offset="100%" stop-color="#FDE68A"/>
     </linearGradient>
-    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+    <filter id="fl-shadow" x="-10%" y="-10%" width="120%" height="130%">
       <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#92400E" flood-opacity="0.3"/>
     </filter>
   </defs>
-  <!-- Rounded square background -->
-  <rect width="120" height="120" rx="28" fill="url(#bg)" filter="url(#shadow)"/>
-  <!-- Crown shape -->
-  <path d="M30 52 L42 28 L54 44 L60 22 L66 44 L78 28 L90 52 Z" fill="url(#crown)" stroke="#FEF3C7" stroke-width="1.5" stroke-linejoin="round"/>
-  <!-- Crown base -->
+  <rect width="120" height="120" rx="28" fill="url(#fl-bg)" filter="url(#fl-shadow)"/>
+  <path d="M30 52 L42 28 L54 44 L60 22 L66 44 L78 28 L90 52 Z" fill="url(#fl-crown)" stroke="#FEF3C7" stroke-width="1.5" stroke-linejoin="round"/>
   <rect x="28" y="50" width="64" height="8" rx="3" fill="#FDE68A"/>
-  <!-- Crown jewels -->
   <circle cx="42" cy="32" r="3" fill="#F59E0B"/>
   <circle cx="60" cy="26" r="3.5" fill="#F59E0B"/>
   <circle cx="78" cy="32" r="3" fill="#F59E0B"/>
-  <!-- FL monogram -->
   <text x="60" y="82" text-anchor="middle" font-family="Georgia, serif" font-size="26" font-weight="bold" fill="white" letter-spacing="1">FL</text>
-  <!-- Subtle shine -->
   <ellipse cx="45" cy="30" rx="8" ry="4" fill="white" opacity="0.15" transform="rotate(-15 45 30)"/>
 </svg>
