@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/api-auth";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
 
 export async function POST(req: Request) {
   const authResult = await requireAuth();
@@ -19,21 +17,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid file type. Allowed: JPEG, PNG, WebP, SVG" }, { status: 400 });
     }
 
-    const maxSize = 5 * 1024 * 1024;
+    const maxSize = 2 * 1024 * 1024;
     if (file.size > maxSize) {
-      return NextResponse.json({ error: "File too large. Max 5MB" }, { status: 400 });
+      return NextResponse.json({ error: "File too large. Max 2MB" }, { status: 400 });
     }
 
-    const ext = file.name.split(".").pop() || "png";
-    const fileName = `product-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-    const uploadDir = path.join(process.cwd(), "public", "uploads", "products");
-    
-    await mkdir(uploadDir, { recursive: true });
-    
     const buffer = Buffer.from(await file.arrayBuffer());
-    await writeFile(path.join(uploadDir, fileName), buffer);
+    const base64 = buffer.toString("base64");
+    const mime = file.type || "image/png";
+    const url = `data:${mime};base64,${base64}`;
 
-    const url = `/uploads/products/${fileName}`;
     return NextResponse.json({ url }, { status: 201 });
   } catch (error) {
     console.error("Upload error:", error);
