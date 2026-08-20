@@ -76,7 +76,6 @@ const ROLE_NAV: Record<Role, NavGroup[]> = {
     {
       title: "Catalog",
       items: [
-        { label: "Products", href: "/warehouse/products", icon: Package },
         { label: "Analytics", href: "/admin/analytics", icon: PieChart },
       ],
     },

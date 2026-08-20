@@ -247,14 +247,14 @@ const handleProceedToPayment = () => {
   }
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] gap-4 overflow-hidden">
+    <div className="flex flex-col lg:flex-row h-[calc(100vh-4rem)] gap-4 overflow-hidden">
       {/* Products Grid */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 min-h-0">
         {/* Search & Filters */}
         <div className="flex items-center gap-3 mb-4">
           <div className="flex-1">
             <Input
-              placeholder="Search products by name or SKU..."
+              placeholder="Search products..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               icon={<Search className="w-4 h-4" />}
@@ -280,7 +280,7 @@ const handleProceedToPayment = () => {
               <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
               {filteredProducts.map((product) => (
                 <motion.div
                   key={product.id}
@@ -290,14 +290,14 @@ const handleProceedToPayment = () => {
                   <button
                     onClick={() => addToCart(product)}
                     className={cn(
-                      "w-full text-left p-4 rounded-2xl border transition-all duration-200",
+                      "w-full text-left p-3 sm:p-4 rounded-2xl border transition-all duration-200",
                       product.stockQuantity <= 0
                         ? "border-red-200 bg-red-50/50 opacity-60 cursor-not-allowed"
                         : "border-gray-100 bg-white hover:border-blue-200 hover:shadow-lg hover:shadow-blue-500/5 cursor-pointer"
                     )}
                     disabled={product.stockQuantity <= 0}
                   >
-                    <div className="w-full h-28 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center mb-3 overflow-hidden">
+                    <div className="w-full h-20 sm:h-28 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center mb-3 overflow-hidden">
                       {product.image ? (
                         <img
                           src={product.image}
@@ -305,17 +305,17 @@ const handleProceedToPayment = () => {
                           className="w-full h-full object-contain p-1"
                         />
                       ) : (
-                        <Package className="w-10 h-10 text-gray-300" />
+                        <Package className="w-8 h-8 sm:w-10 sm:h-10 text-gray-300" />
                       )}
                     </div>
-                    <h3 className="font-semibold text-gray-900 text-sm truncate">{product.name}</h3>
-                    <p className="text-xs text-gray-400 mt-0.5">{product.sku}</p>
-                    <div className="flex items-center justify-between mt-3">
-                      <span className="text-lg font-bold text-blue-600">
+                    <h3 className="font-semibold text-gray-900 text-xs sm:text-sm truncate">{product.name}</h3>
+                    <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5">{product.sku}</p>
+                    <div className="flex items-center justify-between mt-2 sm:mt-3">
+                      <span className="text-sm sm:text-lg font-bold text-blue-600">
                         {formatCurrency(Number(product.sellingPrice))}
                       </span>
-                      <Badge variant={product.stockQuantity > 10 ? "success" : product.stockQuantity > 0 ? "warning" : "destructive"}>
-                        {product.stockQuantity} in stock
+                      <Badge variant={product.stockQuantity > 10 ? "success" : product.stockQuantity > 0 ? "warning" : "destructive"} className="text-[10px] sm:text-xs">
+                        {product.stockQuantity}
                       </Badge>
                     </div>
                   </button>
@@ -327,7 +327,7 @@ const handleProceedToPayment = () => {
       </div>
 
       {/* Cart */}
-      <div className="w-96 flex flex-col bg-white rounded-2xl border border-gray-100 shadow-sm">
+      <div className="w-full lg:w-96 flex flex-col bg-white rounded-2xl border border-gray-100 shadow-sm max-h-[50vh] lg:max-h-none lg:h-auto">
         {/* Cart Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-100">
           <div className="flex items-center gap-2">
