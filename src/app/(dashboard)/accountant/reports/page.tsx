@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { FileText, Download, BarChart3, PieChart, TrendingUp, Loader2, CheckCircle2 } from "lucide-react";
+import { FileText, Download, BarChart3, PieChart, TrendingUp, Loader2, CheckCircle2, Truck } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -227,6 +227,32 @@ const REPORTS: ReportDef[] = [
           String(m.quantity),
           m.reference || "-",
           m.notes || "-",
+        ]),
+      };
+    },
+  },
+  {
+    id: "purchase-orders",
+    name: "Purchase Orders Report",
+    description: "All purchase orders with status and costs",
+    icon: Truck,
+    colorClass: "indigo",
+    roles: ["ADMIN", "ACCOUNTANT"],
+    fetcher: async (period) => {
+      const res = await fetch("/api/purchase-orders?limit=200");
+      const json = await res.json();
+      const orders = json.data || json;
+      const filtered = filterByDate(orders, "createdAt", period);
+      return {
+        columns: ["Order", "Supplier", "Items", "Total", "Status", "Expected", "Created"],
+        data: filtered.map((o: any) => [
+          o.orderNumber,
+          o.supplier?.name || "-",
+          String(o.items?.length || 0),
+          formatCurrencyN(Number(o.totalAmount)),
+          o.status,
+          o.expectedDate ? formatDate(o.expectedDate) : "N/A",
+          formatDate(o.createdAt),
         ]),
       };
     },
