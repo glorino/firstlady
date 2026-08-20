@@ -112,10 +112,9 @@ const ROLE_NAV: Record<Role, NavGroup[]> = {
       title: "Overview",
       items: [
         { label: "Sales Overview", href: "/sales/history", icon: BarChart3 },
-        { label: "Customers", href: "/sales/customers", icon: UserCircle },
         { label: "Returns", href: "/sales/returns", icon: RotateCcw },
         { label: "Register Sessions", href: "/sales/cash-register", icon: DollarSign },
-        { label: "Stock Movements", href: "/warehouse/stock", icon: TrendingUp },
+        { label: "Purchase Orders", href: "/warehouse/purchase-orders", icon: ClipboardList },
       ],
     },
   ],

@@ -23,6 +23,8 @@ enum PaymentMethod {
 
 enum OrderStatus {
   PENDING
+  APPROVED
+  PAID
   COMPLETED
   CANCELLED
   REFUNDED
@@ -274,6 +276,12 @@ model PurchaseOrder {
   status        OrderStatus         @default(PENDING)
   expectedDate  DateTime?
   notes         String?
+  approvedById  String?
+  approvedAt    DateTime?
+  paidById      String?
+  paidAt        DateTime?
+  receivedById  String?
+  receivedAt    DateTime?
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
 

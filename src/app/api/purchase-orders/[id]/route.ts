@@ -42,7 +42,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     }
 
     const allowedFields: Record<string, any> = {};
-    if (body.status && ["PENDING", "COMPLETED", "CANCELLED"].includes(body.status)) {
+    if (body.status && ["PENDING", "APPROVED", "PAID", "COMPLETED", "CANCELLED"].includes(body.status)) {
       allowedFields.status = body.status;
     }
     if (body.expectedDate) allowedFields.expectedDate = new Date(body.expectedDate);

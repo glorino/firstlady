@@ -14,27 +14,17 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
       include: { items: true },
     });
 
-    if (!order) {
-      return NextResponse.json({ error: "Purchase order not found" }, { status: 404 });
-    }
-
-    if (order.status !== "PENDING") {
-      return NextResponse.json({ error: "Only pending purchase orders can be received" }, { status: 400 });
-    }
+    if (!order) return NextResponse.json({ error: "Purchase order not found" }, { status: 404 });
+    if (order.status !== "PAID") return NextResponse.json({ error: "Only paid purchase orders can be received. Wait for accountant to release payment." }, { status: 400 });
 
     const received = await prisma.$transaction(async (tx) => {
       for (const item of order.items) {
         const result = await tx.product.updateMany({
-          where: {
-            id: item.productId,
-            stockQuantity: { gte: 0 },
-          },
+          where: { id: item.productId },
           data: { stockQuantity: { increment: item.quantity } },
         });
 
-        if (result.count === 0) {
-          throw new Error(`Product not found: ${item.productId}`);
-        }
+        if (result.count === 0) throw new Error(`Product not found: ${item.productId}`);
 
         await tx.stockMovement.create({
           data: {
@@ -50,7 +40,11 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
 
       return tx.purchaseOrder.update({
         where: { id },
-        data: { status: "COMPLETED" },
+        data: {
+          status: "COMPLETED",
+          receivedById: authResult.user.id,
+          receivedAt: new Date(),
+        },
         include: { supplier: true, items: { include: { product: true } } },
       });
     });
