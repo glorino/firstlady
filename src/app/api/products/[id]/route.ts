@@ -12,12 +12,18 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
     // Whitelist allowed fields to prevent mass assignment
     const allowedFields: Record<string, any> = {};
-    const allowed = ["name", "sku", "barcode", "description", "costPrice", "sellingPrice", "stockQuantity", "minStockLevel", "maxStockLevel", "unit", "categoryId", "supplierId", "isActive", "image"];
+    const allowed = ["name", "sku", "barcode", "description", "costPrice", "sellingPrice", "stockQuantity", "minStockLevel", "maxStockLevel", "unit", "categoryId", "supplierId", "isActive", "image", "batchNumber", "expiryDate"];
     for (const key of allowed) {
       if (body[key] !== undefined) {
-        allowedFields[key] = typeof body[key] === "string" && ["costPrice", "sellingPrice", "stockQuantity", "minStockLevel", "maxStockLevel"].includes(key)
-          ? Number(body[key])
-          : body[key];
+        if (["costPrice", "sellingPrice", "stockQuantity", "minStockLevel", "maxStockLevel"].includes(key)) {
+          allowedFields[key] = Number(body[key]);
+        } else if (["supplierId", "warehouseId"].includes(key)) {
+          allowedFields[key] = body[key] === "" ? null : body[key];
+        } else if (key === "expiryDate") {
+          allowedFields[key] = body[key] ? new Date(body[key]) : null;
+        } else {
+          allowedFields[key] = body[key];
+        }
       }
     }
 
