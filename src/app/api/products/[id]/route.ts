@@ -40,8 +40,15 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
 
   try {
     const { id } = await params;
-    await prisma.product.delete({ where: { id } });
-    return NextResponse.json({ message: "Product deleted" });
+    const product = await prisma.product.findUnique({ where: { id }, select: { stockQuantity: true, name: true } });
+    if (!product) return NextResponse.json({ error: "Product not found" }, { status: 404 });
+
+    if (product.stockQuantity > 0) {
+      return NextResponse.json({ error: `Cannot delete "${product.name}" — it has ${product.stockQuantity} units in stock. Set stock to 0 first or deactivate it instead.` }, { status: 400 });
+    }
+
+    await prisma.product.update({ where: { id }, data: { isActive: false } });
+    return NextResponse.json({ message: "Product deactivated" });
   } catch (error: any) {
     console.error("Failed to delete product:", error);
     if (error?.code === "P2025") return NextResponse.json({ error: "Product not found" }, { status: 404 });
